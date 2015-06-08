@@ -1,0 +1,48 @@
+#!/bin/sh
+
+# Ensure we're using the local rather than installed version.
+# Note that this doesn't seem to work with installed eggs (e.g.,
+# $ python setup.py install), so you may need to manually
+# remove them first.
+
+OLDPYTHONPATH=${PYTHONPATH}
+export ROOT_DIR=$(pwd)
+export PYTHONPATH=${ROOT_DIR}:${OLDPYTHONPATH}
+export PYTHON="/bin/env python"
+
+echo ""
+echo "***"
+echo "Python path: ${PYTHONPATH}"
+echo "***"
+echo ""
+
+#
+# A return value of 1 indicates the element is not in.
+#
+elementNotIn ()
+{
+  local e
+  for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
+  return 1
+}
+
+# Add to this array as needed.
+UNIT_TEST_DIRS=("cadcvos")
+#IGNORE_TEST_SCRIPTS=("test_group_reader_writer.py")
+
+for TEST_DIR in "${UNIT_TEST_DIRS[@]}"; do
+  cd ${ROOT_DIR}/${TEST_DIR}/test
+  TEST_SCRIPTS=`/bin/ls test*.py`
+  for TEST_SCRIPT in ${TEST_SCRIPTS}; do
+    CURR_DIR=$(pwd)
+    elementNotIn "${TEST_SCRIPT}" ${IGNORE_TEST_SCRIPTS}
+    if [ ${?} == 1 ]; then
+      echo "Running: ${CURR_DIR}/${TEST_SCRIPT}"
+      ${PYTHON} -m trace --count -s -m --ignore-dir=/usr/ ${TEST_SCRIPT}
+    else
+      echo "Ignoring: ${CURR_DIR}/${TEST_SCRIPT}"
+    fi
+  done
+done
+
+export PYTHONPATH=${OLDPYTHONPATH}

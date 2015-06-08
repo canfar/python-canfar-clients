@@ -1,0 +1,63 @@
++++++++++++++++++++++++++ DOCUMENTATION ++++++++++++++++++++++++++
+
+cadcGMSPy is a minimal Python client for the CADC GMS (AC) service. It
+provides the gmsclient module, and an executable script called
+"gmsIsMember" for checking group membership based on an identity
+stored in an X509 certificate.
+
++++++++++++++++++++++++++ INSTALLATION +++++++++++++++++++++++++++
+
+The requirements.txt file will install all necessary dependencies.
+
+$ pip install -r requirements.txt
+
+Or to upgrade.
+
+$ pip install --upgrade -r requirements.txt
+
+After that, to install this project:
+
+$ python setup.py install
+
+See
+
+$ python setup.py install --help
+
+for additional options (e.g., --prefix, --install-scripts)
+
++++++++++++++++++++++++++ USAGE ++++++++++++++++++++++++++++++++++
+
+$ gmsIsMember group1
+
+will look for a proxy certificate in the default location
+$HOME/.ssl/cadcproxy.pem and check to see if that user is a member of
+"group1" writing "True" or "False" to stdout.
+
+$ gmsIsMember --certfile=/path/to/cert.pem group1 group2 group3
+
+will use the X509 certificate at the specified location, and display
+"True" if the user is a member of at least one of group1..group3, and
+"False" otherwise.
+
++++++++++++++++++++++++++ TEST SCRIPTS +++++++++++++++++++++++++++
+
+The top-level "rununittests" executes unit tests in gmsclient/test and
+displays coverage. Note that the tests seem to pick up installed
+versions of the modules rather than local versions, even though
+PYTHONPATH pre-pends $PWD prior to running them, so for active
+development you may need to manually remove any previously-installed
+versions of the gmsclient module.
+
+The integration tests are, at present, designed to run only at
+CADC. For this to work, you will probably want to do the following:
+
+1) Set the environment variable $CADC_ROOT to the path where CADC
+software are installed.
+
+2) Install gmsclient
+> python setup.py install --prefix=$CADC_ROOT \
+  --install-scripts=$CADC_ROOT/scripts
+
+Then
+
+$ test/inttest

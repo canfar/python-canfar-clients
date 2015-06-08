@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<group uri="ivo://cadc.nrc.ca/gms#testgroup_for_somebody">
+  <owner>
+    <user>
+      <userID>
+        <identity type="X500">C=ca,O=someorg,OU=someunit,CN=somebody</identity>
+      </userID>
+      <identities>
+        <identity type="HTTP">somebody</identity>
+      </identities>
+      <details>
+        <userDetails type="personalDetails">
+          <firstName>Some</firstName>
+          <lastName>Body</lastName>
+        </userDetails>
+      </details>
+    </user>
+  </owner>
+  <description>Group for somebody</description>
+  <lastModified>1977-11-25T03:12:30.000</lastModified>
+  <userMembers>
+    <user>
+      <userID>
+        <identity type="X500">C=ca,O=someorg,OU=someunit,CN=somebody</identity>
+      </userID>
+      <identities>
+        <identity type="HTTP">somebody</identity>
+      </identities>
+      <details>
+        <userDetails type="personalDetails">
+          <firstName>Some</firstName>
+          <lastName>Body</lastName>
+        </userDetails>
+      </details>
+    </user>
+  </userMembers>
+</group>

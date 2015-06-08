@@ -1,0 +1,83 @@
+#!/bin/env python2.7
+"""Given an x509 cert determine if a user is a member of at least one
+of a list of groups"""
+
+from gmsclient.client import Client
+from gmsclient.client import get_logger
+from gmsclient import __version__
+from argparse import ArgumentParser
+import os
+import sys
+from gmsclient.exceptions import GroupExistsException, UserNotFoundException
+from gmsclient.group import Group
+from gmsclient.identity import Identity
+from gmsclient.user import User
+
+
+description = "Determine whether a user (identified by CADC proxy cert) " \
+              "is a member of any of a set of groups"
+
+if __name__ == '__main__':
+
+    # Parse the command line
+    parser = ArgumentParser(description=description)
+    parser.add_argument('groupname', type=str, help="Group name to create.")
+    parser.add_argument('certfile', type=str,
+                        help="location of your CADC security certificate file"
+                             + " (default=$HOME/.ssl/cadcproxy.pem",
+                        default=os.path.join(os.getenv("HOME", "."),
+                                             ".ssl/cadcproxy.pem"))
+
+    parser.add_argument('--pi_username', type=str, help="PI username to create.")
+    parser.add_argument('--version', action='version', version=__version__.version)
+
+    parser.add_argument('--verbose', type=bool, default=True, help='verbose messages')
+    parser.add_argument('--debug', type=bool, help='debug messages')
+    parser.add_argument('--quiet', type=bool, help='run quietly')
+
+    args = parser.parse_args()
+    groupname = args.groupname
+    pi_username = args.pi_username
+    certfile = args.certfile
+
+    # get the gmsclient logger
+    logger = get_logger(verbose=args.verbose, debug=args.debug,
+                        quiet=args.quiet)
+    # os.environ['AC_WEBSERVICE_HOST'] = 'jburke.cadc.dao.nrc.ca'
+    c = Client(certfile)
+
+    # Create a GMS client and check for membership
+    try:
+        group = Group(groupname, User(Identity(c.current_user_dn, 'X500')))
+        if pi_username:
+            current_user = User(Identity(pi_username, 'HTTP'))
+            group.add_user_member(current_user)
+            group.add_user_admin(current_user)
+        c.create_group(group)
+        sys.exit(0)
+    except ValueError as ve:
+        logger.error(ve.message)
+    except UserNotFoundException:
+        logger.error("Unable to PUT new group. User '{}' not found."
+                     .format(c.get_current_user_dn()))
+    except GroupExistsException:
+        logger.info("Unable to PUT new group. Group '{}' already exists."
+                    .format(groupname))
+
+        # If a user was given for an existing group,
+        # add user as an admin user
+        if pi_username:
+            group = c.get_group(groupname)
+            current_user = User(Identity(pi_username, 'HTTP'))
+
+            # The set of user_admins contains the distinguishedName of the users.
+            # The user is a uid and we can't map between the two. Add the user
+            # to the set and the server will sort out that they are dups.
+            group.user_admins.add(current_user)
+            try:
+                c.update_group(group)
+            except UserNotFoundException:
+                logger.error("Unable to update existing group. User admin '{}' not found."
+                             .format(current_user.user_id))
+        else:
+            raise

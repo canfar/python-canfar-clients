@@ -1,0 +1,58 @@
+#!/bin/env python
+"""Given an x509 cert determine if a user is a member of at least one
+of a list of groups"""
+from gmsclient import exceptions
+from gmsclient.client import Client
+from gmsclient.client import get_logger
+from gmsclient.group_xml.group_reader import GroupReader
+from gmsclient.group_xml.group_writer import GroupWriter
+from gmsclient import __version__
+from argparse import ArgumentParser
+import os
+import sys
+
+description = "Determine whether a user (identified by CADC proxy cert) is a member of any of a set of groups"
+
+if __name__=='__main__':
+
+    # Parse the command line
+    parser = ArgumentParser(description=description)
+    parser.add_argument('groupname', type=str, help="Group name to get")
+
+    parser.add_argument('--version', action='version',
+                        version=__version__.version)
+    parser.add_argument('--certfile',
+                        help="location of your CADC security certificate file"+\
+                            " (default=$HOME/.ssl/cadcproxy.pem",
+                        default=os.path.join(os.getenv("HOME", "."),
+                                             ".ssl/cadcproxy.pem"))
+
+    parser.add_argument('--verbose',type=bool,help='verbose messages')
+    parser.add_argument('--debug',type=bool,help='debug messages')
+    parser.add_argument('--quiet',type=bool,help='run quietly')
+
+    args=parser.parse_args()
+    groupname=args.groupname
+    certfile=args.certfile
+
+    # get the gmsclient logger
+    logger = get_logger(verbose=args.verbose, debug=args.debug,
+                        quiet=args.quiet)
+
+    # Create a GMS client and check for membership
+    group = None
+    try:
+        c = Client(certfile)
+        writer = GroupWriter()
+        reader = GroupReader()
+
+        # Overkill with reading and writing?
+        logger.info("Looking up %s" % groupname)
+        sys.stdout.write(c.get_group(groupname))
+        sys.exit(0)
+    except ValueError as ve:
+        logger.error(ve.message)
+    except exceptions.GroupNotFoundException:
+        logger.warn("Group not found.")
+        sys.exit(404)
+    raise

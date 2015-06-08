@@ -1,0 +1,58 @@
+#!python
+"""Given an x509 cert determine if a user is a member of at least one
+of a list of groups"""
+
+from gmsclient.client import Client
+from gmsclient.client import Role
+from gmsclient.client import get_logger
+from gmsclient import __version__
+from argparse import ArgumentParser
+import logging
+import os
+import sys
+
+description = "Determine whether a user (identified by CADC proxy cert) is a member of any of a set of groups"
+
+if __name__=='__main__':
+
+    # Parse the command line
+    parser = ArgumentParser(description=description)
+    parser.add_argument('groupnames', metavar='groupname',
+                        type=str, nargs='+',
+                        help="list of group names in which to check membership")
+
+    parser.add_argument('--version', action='version',
+                        version=__version__.version)
+    parser.add_argument('--certfile',
+                        help="location of your CADC security certificate file"+\
+                            " (default=$HOME/.ssl/cadcproxy.pem",
+                        default=os.path.join(os.getenv("HOME", "."),
+                                             ".ssl/cadcproxy.pem"))
+    parser.add_argument('--role',
+                        help="type of role: %s (default=member)" \
+                            % " ".join(Role.allowable_roles),
+                        default='member')
+
+    parser.add_argument('--verbose',type=bool,help='verbose messages')
+    parser.add_argument('--debug',type=bool,help='debug messages')
+    parser.add_argument('--quiet',type=bool,help='run quietly')
+
+    args=parser.parse_args()
+    groupnames=args.groupnames
+    certfile=args.certfile
+    role=Role(args.role)
+
+    # get the gmsclient logger
+    logger = get_logger(verbose=args.verbose, debug=args.debug,
+                        quiet=args.quiet)
+
+    # Create a GMS client and check for membership
+    is_member = False
+    try:
+        c = Client(certfile)
+        is_member = c.is_member(groupnames,role=role)
+    except:
+        sys.exit(1)
+
+    print is_member
+    sys.exit(0)
