@@ -70,11 +70,11 @@
 import os
 import sys
 import unittest
-from gmsclient.group import Group
-from gmsclient.identity import Identity
-from gmsclient.user import User
-from gmsclient.group_xml.groups_reader import GroupsReader
-from gmsclient.group_xml.groups_writer import GroupsWriter
+from groups.group import Group
+from groups.identity import Identity
+from groups.user import User
+from groups.group_xml.groups_reader import GroupsReader
+from groups.group_xml.groups_writer import GroupsWriter
 
 # put build at the start of the search path
 sys.path.insert(0, os.path.abspath('../../lib.local/lib'))

@@ -29,7 +29,7 @@
 # *   Script Name:       setup.py
 # *
 # *   Purpose:
-# *      Distutils setup script for GMS Python client
+# *      Distutils setup script for CADC Python clients
 # *
 # *   Functions:
 # *
@@ -40,14 +40,14 @@
 # -*/
 
 # Use "distribute"
-from gmsclient.__version__ import version
+from groups.__version__ import version
 import os
 from setuptools import setup, find_packages
 import sys
 
 
 if sys.version_info[0] > 2:
-    print 'The GMS package is only compatible with Python version 2.n'
+    print 'The CADC package is only compatible with Python version 2.n'
     sys.exit(-1)
 
 # Build the list of scripts to be installed.
@@ -58,16 +58,16 @@ for script in os.listdir(script_dir):
         continue
     scripts.append(os.path.join(script_dir, script))
 
-setup(name='cadcgms',
+setup(name='cadc',
       version=version,
-      description='CADC GMS Python client',
+      description='CADC Python Clients',
       url='This is a Home-page.',
       author='Canadian Astronomy Data Centre',
       author_email='cadc@nrc.ca',
       license='GPLv3',
-      long_description='Python client library for the CADC GMS service',
+      long_description='Python client libraries and scripts for CADC services',
       packages=find_packages(),
       scripts=scripts,
-      provides=['gmsclient'],
+      provides=['cadc'],
       zip_safe=False,
       requires=['mock', 'pyOpenSSL', 'lxml', 'requests'])

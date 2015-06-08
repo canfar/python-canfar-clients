@@ -27,7 +27,7 @@ elementNotIn ()
 }
 
 # Add to this array as needed.
-UNIT_TEST_DIRS=("gmsclient")
+UNIT_TEST_DIRS=("groups")
 IGNORE_TEST_SCRIPTS=("test_group_reader_writer.py")
 
 for TEST_DIR in "${UNIT_TEST_DIRS[@]}"; do

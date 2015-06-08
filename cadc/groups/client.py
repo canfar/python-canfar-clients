@@ -76,8 +76,8 @@ import os
 import exceptions
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
-from gmsclient.group_xml.group_reader import GroupReader
-from gmsclient.group_xml.group_writer import GroupWriter
+from groups.group_xml.group_reader import GroupReader
+from groups.group_xml.group_writer import GroupWriter
 
 # disable the unverified HTTPS call warnings
 requests.packages.urllib3.disable_warnings()

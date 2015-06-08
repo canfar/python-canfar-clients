@@ -68,7 +68,7 @@
 -->
 
 <!DOCTYPE project>
-<project name="cadcGMSPy" default="build" basedir=".">
+<project name="python-cadc-clients" default="build" basedir=".">
     <property environment="env"/>
 
     <!-- site-specific build properties or overrides of values in opencadc.properties -->
@@ -86,11 +86,11 @@
     <import file="extras.xml" optional="true" />
 
     <!-- project-specific properties -->
-    <property name="project" value="cadcGMSPy" />
+    <property name="project" value="python-cadc-clients" />
 
     <target name="setup-test">
       <tempfile property="virtual.python.dir" destDir="${java.io.tmpdir}"
-                prefix="cadcGMSPy" />
+                prefix="python-cadc-clients" />
       <mkdir dir="${virtual.python.dir}" />
 
       <exec command="/usr/bin/virtualenv">
@@ -128,9 +128,9 @@
         <echo message="test ${build}/lib/${python.executable}/site-packages using ${python.executable}"/>
         <echo message="CADC_ROOT = ${virtual.python.dir}" />
         <apply executable="${python.executable}"
-               dir="gmsclient/test" failonerror="true">
+               dir="groups/test" failonerror="true">
             <env key="CADC_ROOT" value="${virtual.python.dir}" />
-            <fileset dir="gmsclient/test" includes="test*.py" />
+            <fileset dir="groups/test" includes="test*.py" />
         </apply>
     </target>
 

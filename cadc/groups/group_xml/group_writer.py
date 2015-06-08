@@ -67,103 +67,89 @@
 #
 # ***********************************************************************
 
-import os
-import sys
-import unittest
-from datetime import datetime
-from gmsclient.group import Group
-from gmsclient.group_property import GroupProperty
-from gmsclient.identity import Identity
-from gmsclient.user import User
-from gmsclient.group_xml.group_reader import GroupReader
-from gmsclient.group_xml.group_writer import GroupWriter
+from lxml import etree
+from groups.group import Group
+from groups.group_xml.group_property_writer import GroupPropertyWriter
+from groups.group_xml.user_writer import UserWriter
+from groups.util import date2ivoa
 
-# put build at the start of the search path
-sys.path.insert(0, os.path.abspath('../../lib.local/lib'))
+GROUP_URI = 'ivo://cadc.nrc.ca/gms#'
 
 
-class TestGroupReaderWriter(unittest.TestCase):
-    def test_minimal_group(self):
-        expected = Group('groupID', None)
-        writer = GroupWriter()
-        xml_string = writer.write(expected, False)
+class GroupWriter(object):
 
-        self.assertIsNotNone(xml_string)
-        self.assertTrue(len(xml_string) > 0)
+    def write(self, group, deep_copy=True, declaration=True):
 
-        reader = GroupReader()
+        assert isinstance(group, Group), 'group is not a Group instance'
 
-        actual = reader.read(xml_string)
+        return etree.tostring(self.get_group_element(group, deep_copy),
+                              xml_declaration=declaration,
+                              encoding='UTF-8',
+                              pretty_print=True)
 
-        self.assertIsNotNone(expected.group_id)
-        self.assertIsNotNone(actual.group_id)
-        self.assertEqual(actual.group_id, expected.group_id)
+    def get_group_element(self, group, deep_copy):
+        group_element = etree.Element('group')
+        group_element.set('uri', GROUP_URI + group.group_id)
+        self._add_owner_element(group_element, group.owner)
 
-        self.assertIsNone(expected.owner)
-        self.assertIsNone(actual.owner)
+        if deep_copy:
+            if group.description is not None:
+                self._add_element(group_element, group.description,
+                                  'description')
+            if group.last_modified is not None:
+                self._add_datetime_element(group_element, group.last_modified,
+                                           'lastModified')
+            self._add_properties(group_element, group.properties)
+            self._add_groups(group_element, group.group_members, 'groupMembers')
+            self._add_users(group_element, group.user_members, 'userMembers')
+            self._add_groups(group_element, group.group_admins, 'groupAdmins')
+            self._add_users(group_element, group.user_admins, 'userAdmins')
 
-        self.assertIsNone(expected.description)
-        self.assertIsNone(actual.description)
+        return group_element
 
-        self.assertIsNone(expected.last_modified)
-        self.assertIsNone(actual.last_modified)
+    def _add_owner_element(self, group_element, owner):
+        if owner is None:
+            return
 
-        self.assertItemsEqual(actual.group_members, expected.group_members)
-        self.assertItemsEqual(actual.user_members, expected.user_members)
-        self.assertItemsEqual(actual.group_admins, expected.group_admins)
-        self.assertItemsEqual(actual.user_admins, expected.user_admins)
+        user_writer = UserWriter()
+        owner_element = etree.SubElement(group_element, 'owner')
+        owner_element.append(user_writer.get_user_element(owner))
 
-    def test_maximal_group(self):
-        expected = Group('groupID', User(Identity('username', 'HTTP')))
-        expected.description = 'description'
-        expected.last_modified = datetime(2014, 01, 20, 19, 45, 37, 0)
-        expected.properties.add(GroupProperty('key1', 'value1', True))
-        expected.properties.add(GroupProperty('key2', 'value2', False))
+    def _add_properties(self, group_element, properties):
+        if properties is None or not properties:
+            return
+        properties_element = etree.SubElement(group_element, 'properties')
+        property_writer = GroupPropertyWriter()
+        for property in properties:
+            if property is not None:
+                properties_element.append(property_writer.get_property_element(property))
 
-        group_member1 = Group('groupMember1', User(Identity('uid1', 'UID')))
-        group_member2 = Group('groupMember2', User(Identity('uid2', 'UID')))
-        expected.group_members.add(group_member1)
-        expected.group_members.add(group_member2)
+    def _add_groups(self, group_element, groups, tag):
+        if groups is None or not groups:
+            return
+        members_element = etree.SubElement(group_element, tag)
+        for group in groups:
+            members_element.append(self.get_group_element(group, False))
 
-        user_member1 = User(Identity('openid1', 'OpenID'))
-        user_member2 = User(Identity('openid2', 'OpenID'))
-        expected.user_members.add(user_member1)
-        expected.user_members.add(user_member2)
+    def _add_users(self, parent, users, tag):
+        if users is None or not users:
+            return
+        user_writer = UserWriter()
+        members_element = etree.SubElement(parent, tag)
+        for user in users:
+            members_element.append(user_writer.get_user_element(user))
 
-        group_admin1 = Group('adminMember1', User(Identity('x5001', 'X500')))
-        group_admin2 = Group('adminMember2', User(Identity('x5002', 'X500')))
-        expected.group_admins.add(group_admin1)
-        expected.group_admins.add(group_admin2)
+    def _add_element(self, parent, text, tag):
+        if text is None:
+            return
+        element = etree.SubElement(parent, tag)
+        if isinstance(text, (str, unicode)):
+            element.text = text
+        else:
+            element.text = str(text)
 
-        user_admin1 = User(Identity('foo1', 'HTTP'))
-        user_admin2 = User(Identity('foo2', 'HTTP'))
-        expected.user_admins.add(user_admin1)
-        expected.user_admins.add(user_admin2)
-
-        writer = GroupWriter()
-        xml_string = writer.write(expected, True)
-
-        self.assertIsNotNone(xml_string)
-        self.assertTrue(len(xml_string) > 0)
-
-        reader = GroupReader()
-        actual = reader.read(xml_string)
-
-        self.assertIsNotNone(expected.group_id)
-        self.assertIsNotNone(actual.group_id)
-        self.assertEqual(actual.group_id, expected.group_id)
-
-        self.assertEqual(actual.owner.user_id.type, expected.owner.user_id.type)
-        self.assertEqual(actual.owner.user_id.name, expected.owner.user_id.name)
-        self.assertEqual(actual.description, expected.description)
-        self.assertEqual(actual.last_modified, expected.last_modified)
-
-        self.assertSetEqual(actual.properties, expected.properties)
-        self.assertSetEqual(actual.group_members, expected.group_members)
-        self.assertSetEqual(actual.user_members, expected.user_members)
-        self.assertSetEqual(actual.group_admins, expected.group_admins)
-        self.assertSetEqual(actual.user_admins, expected.user_admins)
-
-
-if __name__ == '__main__':
-    unittest.main()
+    def _add_datetime_element(self, parent, value, tag):
+        if value is None:
+            return
+        element = etree.SubElement(parent, tag)
+        element.text = date2ivoa(value)

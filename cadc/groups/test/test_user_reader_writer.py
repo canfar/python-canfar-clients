@@ -70,10 +70,10 @@
 import os
 import sys
 import unittest
-from gmsclient.identity import Identity
-from gmsclient.user import User
-from gmsclient.group_xml.user_reader import UserReader
-from gmsclient.group_xml.user_writer import UserWriter
+from groups.identity import Identity
+from groups.user import User
+from groups.group_xml.user_reader import UserReader
+from groups.group_xml.user_writer import UserWriter
 
 
 # put build at the start of the search path

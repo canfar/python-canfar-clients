@@ -70,9 +70,9 @@
 import os
 import sys
 import unittest
-from gmsclient.group_property import GroupProperty
-from gmsclient.group_xml.group_property_reader import GroupPropertyReader
-from gmsclient.group_xml.group_property_writer import GroupPropertyWriter
+from groups.group_property import GroupProperty
+from groups.group_xml.group_property_reader import GroupPropertyReader
+from groups.group_xml.group_property_writer import GroupPropertyWriter
 
 
 # put build at the start of the search path

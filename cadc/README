@@ -1,9 +1,13 @@
 +++++++++++++++++++++++++ DOCUMENTATION ++++++++++++++++++++++++++
 
-cadcGMSPy is a minimal Python client for the CADC GMS (AC) service. It
-provides the gmsclient module, and an executable script called
-"gmsIsMember" for checking group membership based on an identity
-stored in an X509 certificate.
+This repository contains Python clients for CADC web services:
+
+groups: interactions with the GMS (AC) service. It provides the
+gmsclient module, and an executable script called "gmsIsMember" for
+checking group membership based on an identity stored in an X509
+certificate.
+
+data: interaction with the low-level data service
 
 +++++++++++++++++++++++++ INSTALLATION +++++++++++++++++++++++++++
 

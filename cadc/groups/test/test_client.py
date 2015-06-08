@@ -73,8 +73,8 @@ import mock
 import unittest
 import requests
 
-from gmsclient.client import Client
-from gmsclient.group_xml.group_reader import GroupReader
+from groups.client import Client
+from groups.group_xml.group_reader import GroupReader
 
 test_certificate_name = "cadcproxy.pem"
 test_x500_dn = 'C=ca,O=someorg,OU=someunit,CN=somebody'
