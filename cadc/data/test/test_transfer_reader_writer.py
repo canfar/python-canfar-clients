@@ -6,12 +6,12 @@ from lxml import etree
 # put build at the start of the search path
 sys.path.insert(0, os.path.abspath('../../'))
 
-from cadcvos.transfer import Transfer
-from cadcvos.transfer import TransferError
-from cadcvos.transfer_reader import TransferReader
-from cadcvos.transfer_writer import TransferWriter
-from cadcvos.protocol import Protocol
-from cadcvos.constants import *
+from data.transfer import Transfer
+from data.transfer import TransferError
+from data.transfer_reader import TransferReader
+from data.transfer_writer import TransferWriter
+from data.protocol import Protocol
+from data.constants import *
 
 test_target_good = 'vos://cadc.nrc.ca~vospace/file'
 test_target_bad = 'ftp://garbage/target'
