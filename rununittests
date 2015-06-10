@@ -27,7 +27,7 @@ elementNotIn ()
 }
 
 # Add to this array as needed.
-UNIT_TEST_DIRS=("groups")
+UNIT_TEST_DIRS=("cadc/groups" "cadc/data")
 IGNORE_TEST_SCRIPTS=("test_group_reader_writer.py")
 
 for TEST_DIR in "${UNIT_TEST_DIRS[@]}"; do

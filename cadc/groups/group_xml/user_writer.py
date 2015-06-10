@@ -68,7 +68,7 @@
 # ***********************************************************************
 
 from lxml import etree
-from ..user import User
+from cadc.groups.user import User
 
 
 class UserWriter(object):

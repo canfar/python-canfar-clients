@@ -70,14 +70,15 @@
 import os
 import sys
 import unittest
-from groups.group import Group
-from groups.identity import Identity
-from groups.user import User
-from groups.group_xml.groups_reader import GroupsReader
-from groups.group_xml.groups_writer import GroupsWriter
 
-# put build at the start of the search path
-sys.path.insert(0, os.path.abspath('../../lib.local/lib'))
+# put local code at top of the search path
+sys.path.insert(0, os.path.abspath('../../../'))
+
+from cadc.groups.group import Group
+from cadc.groups.identity import Identity
+from cadc.groups.user import User
+from cadc.groups.group_xml.groups_reader import GroupsReader
+from cadc.groups.group_xml.groups_writer import GroupsWriter
 
 
 class TestGroupsReaderWriter(unittest.TestCase):
@@ -117,3 +118,11 @@ class TestGroupsReaderWriter(unittest.TestCase):
         self.assertTrue(len(actual) == 2)
         self.assertTrue(group1 in actual)
         self.assertTrue(group2 in actual)
+
+def run():
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestGroupsReaderWriter)
+    return unittest.TextTestRunner(verbosity=2).run(suite)
+
+
+if __name__ == '__main__':
+    run()

@@ -67,7 +67,7 @@
 # ***********************************************************************
 
 from lxml import etree
-from .. group_property import GroupProperty
+from cadc.groups.group_property import GroupProperty
 
 
 class GroupPropertyWriter(object):

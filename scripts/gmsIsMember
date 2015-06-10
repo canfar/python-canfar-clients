@@ -1,0 +1,43 @@
+#!python
+"""Given an x509 cert determine if a user is a member of at least one
+of a list of groups"""
+
+from cadc.groups.client import GroupsClient
+from cadc.groups.role import Role
+from cadc.common.parser import BaseParser
+import sys
+
+description = "Determine whether a user (identified by CADC proxy cert) is a member of any of a set of groups"
+
+if __name__=='__main__':
+
+    # Parse the command line
+    parser = BaseParser(description=description)
+    parser.add_argument('groupnames', metavar='groupname',
+                        type=str, nargs='+',
+                        help="list of group names in which to check membership")
+
+    parser.add_argument('--role',
+                        help="type of role: %s (default=member)" \
+                            % " ".join(Role.allowable_roles),
+                        default='member')
+
+    args=parser.parse_args()
+    groupnames=args.groupnames
+    certfile=args.certfile
+    role=Role(args.role)
+
+    # Create a groups client and check for membership
+    is_member = False
+    try:
+        c = GroupsClient(certfile)
+        # get the gmsclient logger
+        logger = get_logger(verbose=args.verbose, debug=args.debug,
+                            quiet=args.quiet)
+
+        is_member = c.is_member(groupnames,role=role)
+    except:
+        sys.exit(1)
+
+    print is_member
+    sys.exit(0)

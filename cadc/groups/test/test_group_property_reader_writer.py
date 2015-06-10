@@ -70,13 +70,13 @@
 import os
 import sys
 import unittest
-from groups.group_property import GroupProperty
-from groups.group_xml.group_property_reader import GroupPropertyReader
-from groups.group_xml.group_property_writer import GroupPropertyWriter
 
+# put local code at top of the search path
+sys.path.insert(0, os.path.abspath('../../../'))
 
-# put build at the start of the search path
-sys.path.insert(0, os.path.abspath('../../lib.local/lib'))
+from cadc.groups.group_property import GroupProperty
+from cadc.groups.group_xml.group_property_reader import GroupPropertyReader
+from cadc.groups.group_xml.group_property_writer import GroupPropertyWriter
 
 
 class TestGroupPropertyReaderWriter(unittest.TestCase):
@@ -137,3 +137,10 @@ class TestGroupPropertyReaderWriter(unittest.TestCase):
 
 
 
+def run():
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestGroupPropertyReaderWriter)
+    return unittest.TextTestRunner(verbosity=2).run(suite)
+
+
+if __name__ == '__main__':
+    run()

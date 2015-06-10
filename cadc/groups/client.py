@@ -69,100 +69,15 @@
 # Python implementation of the GMS client. Only supports x509 as the
 # IDTYPE at present.
 
-from OpenSSL import crypto
 import logging
-import requests
 import os
 import exceptions
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.poolmanager import PoolManager
-from groups.group_xml.group_reader import GroupReader
-from groups.group_xml.group_writer import GroupWriter
-
-# disable the unverified HTTPS call warnings
-requests.packages.urllib3.disable_warnings()
-
-logger = logging.getLogger('gmsclient')
-
-_HTTP_STATUS_CODE_EXCEPTIONS = {
-    404: {
-        "USER": exceptions.UserNotFoundException(),
-        "GROUP": exceptions.GroupNotFoundException()
-    },
-    409: exceptions.GroupExistsException(),
-    401: exceptions.UnauthorizedException()
-}
-_SSL_VERSION = 'TLSv1'
+from group_xml.group_reader import GroupReader
+from group_xml.group_writer import GroupWriter
+from cadc.common.client import BaseClient
 
 
-def get_exception(response):
-    """
-    Obtain the exception, if any, that represents the status of the response.
-    :param response:    The requests response object.
-    :return:    Exception, or None.
-    """
-
-    status_code = response.status_code
-    status_text = response.text
-
-    logger.debug("Checking for code %d" % status_code)
-
-    try:
-        http_exception_obj = _HTTP_STATUS_CODE_EXCEPTIONS[status_code]
-        if status_code == 404:
-            if status_text.startswith('User'):
-                err = http_exception_obj["USER"]
-            else:
-                err = http_exception_obj["GROUP"]
-        else:
-            err = http_exception_obj
-    except KeyError:
-        # Good!  No error.
-        err = None
-
-    return err
-
-
-def get_logger(verbose=True, debug=False, quiet=False):
-    """Sets up the logging for gmsclient"""
-
-    log_format = "%(module)s: %(levelname)s: %(message)s"
-
-    log_level = ((debug and logging.DEBUG) or (verbose and logging.INFO) or
-                 (quiet and logging.FATAL) or logging.ERROR)
-
-    if log_level == logging.DEBUG:
-        log_format = "%(levelname)s: @(%(asctime)s) - " \
-                     "%(module)s.%(funcName)s %(lineno)d: %(message)s"
-
-    logger.setLevel(log_level)
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(logging.Formatter(fmt=log_format))
-    logger.addHandler(stream_handler)
-    return logger
-
-
-class SSLAdapter(HTTPAdapter):
-    """An HTTPS Transport Adapter that uses an arbitrary SSL version."""
-
-    def __init__(self, ssl_version=None, cert_filename=None, **kwargs):
-        self.ssl_version = ssl_version
-        self.cert = cert_filename
-
-        super(SSLAdapter, self).__init__(**kwargs)
-
-    def init_poolmanager(self, connections, maxsize, block=False, **kwargs):
-        logger.debug("Connecting using {}".format(self.cert))
-
-        self.poolmanager = PoolManager(num_pools=connections,
-                                       maxsize=maxsize,
-                                       block=block,
-                                       key_file=self.cert,
-                                       cert_file=self.cert,
-                                       ssl_version=self.ssl_version)
-
-
-class Client:
+class GroupsClient(BaseClient):
     """Class for interacting with the access control web service"""
 
     def __init__(self, certfile=None):
@@ -172,42 +87,28 @@ class Client:
 
         certfile -- Path to CADC proxy certificate
         """
-        host = os.getenv('AC_WEBSERVICE_HOST', 'www.canfar.phys.uvic.ca')
+
+        super(GroupsClient, self).__init__(certfile=certfile)
+
+        # Specific base_url for AC webservice
+        host = os.getenv('AC_WEBSERVICE_HOST', self.host)
         path = os.getenv('AC_WEBSERVICE_PATH', '/ac')
         self.base_url = '{}://{}{}'.format('https', host, path)
-        self.certificate_file_location = certfile
+        self.logger.info('Base URL {}'.format(self.base_url))
+
+        # This client will need the user DN
         self.current_user_dn = self.get_current_user_dn()
 
-        logger.info('Base URL {}'.format(self.base_url))
+        # Specialized exceptions handled by this client
+        self._HTTP_STATUS_CODE_EXCEPTIONS[404] = {
+            "User": exceptions.UserNotFoundException(),
+            "Group": exceptions.GroupNotFoundException()
+            }
+        self._HTTP_STATUS_CODE_EXCEPTIONS[409] = \
+            exceptions.GroupExistsException()
 
-    def get_current_user_dn(self):
-        """
-            Obtain the current user's DN from this client's certificate.  This
-            will return a distinguished name, as it was read from the
-            certificate.
-            jenkinsd 2015.02.06
-        """
-
-        # Get the dn from the x509 cert
-        logger.debug('Read dn from x509 cert {}'
-                     .format(self.certificate_file_location))
-        try:
-            f = open(self.certificate_file_location, "r")
-            certfile_data = f.read()
-            f.close()
-        except IOError, e:
-            logger.error('Failed to read certfile: {}'.format(str(e)))
-            raise
-
-        try:
-            x509 = crypto.load_certificate(crypto.FILETYPE_PEM, certfile_data)
-            x509_dn = ""
-            for part in x509.get_issuer().get_components():
-                x509_dn = x509_dn + '='.join(part) + ','
-            return x509_dn.rstrip(',')
-        except crypto.Error, e:
-            logger.error('Failed to parse certfile: {}'.format(str(e)))
-            raise
+        self._HTTP_STATUS_CODE_EXCEPTIONS[401] = \
+            exceptions.UnauthorizedException()
 
     def create_group(self, group):
         """
@@ -219,8 +120,8 @@ class Client:
         url = self.base_url + "/groups"
         writer = GroupWriter()
         xml_string = writer.write(group)
-        self._upload_create_xml(url, xml_string, 'PUT')
-        logger.info('Created group {}'.format(group.group_id))
+        self._upload_xml(url, xml_string, 'PUT')
+        self.logger.info('Created group {}'.format(group.group_id))
 
     def get_group(self, group_id):
 
@@ -231,7 +132,7 @@ class Client:
         xml_string = self._download_xml(url)
         reader = GroupReader()
         group = reader.read(xml_string)
-        logger.info('Retrieved group {}'.format(group.group_id))
+        self.logger.info('Retrieved group {}'.format(group.group_id))
         return group
 
     def update_group(self, group):
@@ -244,39 +145,9 @@ class Client:
         url = self.base_url + "/groups/" + group.group_id
         writer = GroupWriter()
         xml_string = writer.write(group)
-        self._upload_create_xml(url, xml_string, 'POST')
-        logger.info('Updated group {}'.format(group.group_id))
+        self._upload_xml(url, xml_string, 'POST')
+        self.logger.info('Updated group {}'.format(group.group_id))
 
-    def _upload_create_xml(self, url, xml_string, method):
-        logger.debug('Uploading XML: {}'.format(xml_string))
-
-        s = self._create_session()
-        if method == 'PUT':
-            response = s.put(url, data=xml_string, verify=False)
-        else:
-            response = s.post(url, data=xml_string, json=None, verify=False)
-
-        http_exception = get_exception(response)
-        if http_exception is not None:
-            raise http_exception
-
-    def _download_xml(self, url):
-        logger.debug('Requesting XML: {}'.format(url))
-
-        s = self._create_session()
-        response = s.get(url, verify=False)
-        http_exception = get_exception(response)
-
-        if http_exception is None:
-            xml_string = response.text
-            group_xml_string = xml_string.encode('utf-8')
-            return group_xml_string
-        else:
-            raise http_exception
-
-    def _create_session(self):
-        logger.debug('Using cert at {}'.format(self.certificate_file_location))
-
-        s = requests.Session()
-        s.mount('https://', SSLAdapter(_SSL_VERSION, self.certificate_file_location))
-        return s
+    def _make_logger(self):
+        """ Logger for gmsclient """
+        self.logger = logging.getLogger('gmsclient')

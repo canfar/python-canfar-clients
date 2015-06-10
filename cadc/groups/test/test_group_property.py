@@ -70,11 +70,11 @@
 import os
 import sys
 import unittest
-from groups.group_property import GroupProperty
 
-# put build at the start of the search path
-sys.path.insert(0, os.path.abspath('../../lib.local/lib'))
+# put local code at top of the search pat
+sys.path.insert(0, os.path.abspath('../../../'))
 
+from cadc.groups.group_property import GroupProperty
 
 class TestGroupProperty(unittest.TestCase):
 
@@ -89,3 +89,11 @@ class TestGroupProperty(unittest.TestCase):
         self.assertEqual(group_property.key, 'key')
         self.assertEqual(group_property.value, 'value')
         self.assertEqual(group_property.read_only, True)
+
+def run():
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestGroupProperty)
+    return unittest.TextTestRunner(verbosity=2).run(suite)
+
+
+if __name__ == '__main__':
+    run()

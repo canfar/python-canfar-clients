@@ -1,13 +1,14 @@
 +++++++++++++++++++++++++ DOCUMENTATION ++++++++++++++++++++++++++
 
-This repository contains Python clients for CADC web services:
+This repository contains Python client libraries ('cadc' package) and
+command-line utilities (scripts subdirectory) for CADC web services:
 
-groups: interactions with the GMS (AC) service. It provides the
-gmsclient module, and an executable script called "gmsIsMember" for
-checking group membership based on an identity stored in an X509
-certificate.
+groups: this module interacts with the GMS (AC) service. There are
+also scripts called "gmsIsMember" for checking group membership based
+on an identity stored in an X509 certificate, and "gmsCreateGroup" and
+"gmsGetGroup" for creating and getting groups, respectively.
 
-data: interaction with the low-level data service
+data: interaction with the low-level data web service.
 
 +++++++++++++++++++++++++ INSTALLATION +++++++++++++++++++++++++++
 
@@ -45,12 +46,12 @@ will use the X509 certificate at the specified location, and display
 
 +++++++++++++++++++++++++ TEST SCRIPTS +++++++++++++++++++++++++++
 
-The top-level "rununittests" executes unit tests in gmsclient/test and
-displays coverage. Note that the tests seem to pick up installed
-versions of the modules rather than local versions, even though
-PYTHONPATH pre-pends $PWD prior to running them, so for active
-development you may need to manually remove any previously-installed
-versions of the gmsclient module.
+The top-level "rununittests" executes unit tests in
+cadc/<package>/test and displays coverage. Note that the tests seem to
+pick up installed versions of the modules rather than local versions,
+even though PYTHONPATH pre-pends $PWD prior to running them, so for
+active development you may need to manually remove any
+previously-installed versions of the gmsclient module.
 
 The integration tests are, at present, designed to run only at
 CADC. For this to work, you will probably want to do the following:

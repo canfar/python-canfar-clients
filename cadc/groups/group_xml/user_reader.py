@@ -68,8 +68,8 @@
 # ***********************************************************************
 
 from lxml import etree
-from ..identity import Identity
-from ..user import User
+from cadc.groups.identity import Identity
+from cadc.groups.user import User
 
 
 class UserReader(object):

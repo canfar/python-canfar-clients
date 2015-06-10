@@ -71,7 +71,7 @@
 """ Defines __init__ """
 
 
-from client import Client
+from client import GroupsClient
 from group import Group
 from group_property import GroupProperty
 from identity import Identity

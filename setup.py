@@ -40,7 +40,7 @@
 # -*/
 
 # Use "distribute"
-from groups.__version__ import version
+from cadc.common.__version__ import version
 import os
 from setuptools import setup, find_packages
 import sys

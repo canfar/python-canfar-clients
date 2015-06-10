@@ -1,0 +1,45 @@
+#!python
+"""Given an x509 cert determine if a user is a member of at least one
+of a list of groups"""
+from cadc.groups import exceptions
+from cadc.groups.client import GroupsClient
+from cadc.groups.client import get_logger
+from cadc.groups.group_xml.group_reader import GroupReader
+from cadc.groups.group_xml.group_writer import GroupWriter
+from cadc.common.parser import BaseParser
+import sys
+
+description = "Get information about a group"
+
+if __name__=='__main__':
+
+    # Parse the command line
+    parser = BaseParser(description=description)
+    parser.add_argument('groupname', type=str, help="Group name to get")
+
+    args=parser.parse_args()
+    groupname=args.groupname
+    certfile=args.certfile
+
+    # Create a groups client and get group
+    group = None
+    try:
+        c = GroupsClient(certfile)
+        # get the GroupsClient logger
+        logger = c.get_logger(verbose=args.verbose, debug=args.debug,
+                        quiet=args.quiet)
+
+
+        writer = GroupWriter()
+        reader = GroupReader()
+
+        # Overkill with reading and writing?
+        logger.info("Looking up %s" % groupname)
+        sys.stdout.write(c.get_group(groupname))
+        sys.exit(0)
+    except ValueError as ve:
+        logger.error(ve.message)
+    except exceptions.GroupNotFoundException:
+        logger.warn("Group not found.")
+        sys.exit(404)
+    raise

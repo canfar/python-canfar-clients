@@ -72,9 +72,14 @@ import logging
 import mock
 import unittest
 import requests
+import os
+import sys
 
-from groups.client import Client
-from groups.group_xml.group_reader import GroupReader
+# put local code at top of the search path
+sys.path.insert(0, os.path.abspath('../../../'))
+
+from cadc.groups.client import GroupsClient
+from cadc.groups.group_xml.group_reader import GroupReader
 
 test_certificate_name = "cadcproxy.pem"
 test_x500_dn = 'C=ca,O=someorg,OU=someunit,CN=somebody'
@@ -88,11 +93,11 @@ mock_response = mock.Mock(spec=requests.Response())
 logger = logging.getLogger('gmsclient')
 
 
-class ClientForTest(Client):
-    """Subclass of Client with new constructor"""
+class ClientForTest(GroupsClient):
+    """Subclass of GroupsClient with new constructor"""
 
     def __init__(self, certfile):
-        Client.__init__(self, certfile)
+        GroupsClient.__init__(self, certfile)
         self.base_url = test_base_url
         self.certificate_file_location = test_certificate_name
         self.current_user_dn = test_x500_dn
@@ -166,9 +171,7 @@ class TestClient(unittest.TestCase):
         mock_response.status_code = 200
         mock_session.get.return_value = mock_response
 
-        group_xml = c.get_group(test_group_id)
-
-        g = GroupReader().read(group_xml, True)
+        g = c.get_group(test_group_id)
 
         self.assertIsNotNone(g, 'Group for %s is none' % test_group_id)
         self.assertEqual(g.group_id, test_group_id, "Wrong group ID.")
@@ -199,7 +202,8 @@ class TestClient(unittest.TestCase):
         mock_session.post.assert_called_with(test_base_url + "/groups/" + group.group_id,
                                              data=test_create_group_xml.
                                              replace('\r', ''),
-                                             verify=False)
+                                             verify=False,
+                                             json=None)
 
 
 def run():

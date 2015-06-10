@@ -70,14 +70,14 @@
 import os
 import sys
 import unittest
-from groups.identity import Identity
-from groups.user import User
-from groups.group_xml.user_reader import UserReader
-from groups.group_xml.user_writer import UserWriter
 
+# put local code at top of the search path
+sys.path.insert(0, os.path.abspath('../../../'))
 
-# put build at the start of the search path
-sys.path.insert(0, os.path.abspath('../../lib.local/lib'))
+from cadc.groups.identity import Identity
+from cadc.groups.user import User
+from cadc.groups.group_xml.user_reader import UserReader
+from cadc.groups.group_xml.user_writer import UserWriter
 
 
 class TestUserReaderWriter(unittest.TestCase):
@@ -96,3 +96,11 @@ class TestUserReaderWriter(unittest.TestCase):
         self.assertIsNotNone(actual)
         self.assertEqual(actual.user_id.type, expected.user_id.type)
         self.assertEqual(actual.user_id.name, expected.user_id.name)
+
+def run():
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestUserReaderWriter)
+    return unittest.TextTestRunner(verbosity=2).run(suite)
+
+
+if __name__ == '__main__':
+    run()

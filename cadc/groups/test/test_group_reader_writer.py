@@ -71,16 +71,16 @@ import os
 import sys
 import unittest
 from datetime import datetime
-from groups.group import Group
-from groups.group_property import GroupProperty
-from groups.identity import Identity
-from groups.user import User
-from groups.group_xml.group_reader import GroupReader
-from groups.group_xml.group_writer import GroupWriter
 
-# put build at the start of the search path
-sys.path.insert(0, os.path.abspath('../../lib.local/lib'))
+# put local code at top of the search path
+sys.path.insert(0, os.path.abspath('../../../'))
 
+from cadc.groups.group import Group
+from cadc.groups.group_property import GroupProperty
+from cadc.groups.identity import Identity
+from cadc.groups.user import User
+from cadc.groups.group_xml.group_reader import GroupReader
+from cadc.groups.group_xml.group_writer import GroupWriter
 
 class TestGroupReaderWriter(unittest.TestCase):
     def test_minimal_group(self):
@@ -165,5 +165,10 @@ class TestGroupReaderWriter(unittest.TestCase):
         self.assertSetEqual(actual.user_admins, expected.user_admins)
 
 
+def run():
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestGroupReaderWriter)
+    return unittest.TextTestRunner(verbosity=2).run(suite)
+
+
 if __name__ == '__main__':
-    unittest.main()
+    run()

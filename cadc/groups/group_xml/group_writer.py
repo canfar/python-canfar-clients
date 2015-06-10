@@ -68,10 +68,10 @@
 # ***********************************************************************
 
 from lxml import etree
-from groups.group import Group
-from groups.group_xml.group_property_writer import GroupPropertyWriter
-from groups.group_xml.user_writer import UserWriter
-from groups.util import date2ivoa
+from cadc.groups.group import Group
+from group_property_writer import GroupPropertyWriter
+from user_writer import UserWriter
+from cadc.common.util import date2ivoa
 
 GROUP_URI = 'ivo://cadc.nrc.ca/gms#'
 
