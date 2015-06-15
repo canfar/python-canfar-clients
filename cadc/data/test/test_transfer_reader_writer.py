@@ -3,15 +3,15 @@ import sys
 import unittest
 from lxml import etree
 
-# put build at the start of the search path
-sys.path.insert(0, os.path.abspath('../../'))
+# put local code at start of path
+sys.path.insert(0, os.path.abspath('../../../'))
 
-from data.transfer import Transfer
-from data.transfer import TransferError
-from data.transfer_reader import TransferReader
-from data.transfer_writer import TransferWriter
-from data.protocol import Protocol
-from data.constants import *
+from cadc.data.transfer import Transfer
+from cadc.data.transfer import TransferError
+from cadc.data.transfer_reader import TransferReader
+from cadc.data.transfer_writer import TransferWriter
+from cadc.data.protocol import Protocol
+from cadc.data.constants import *
 
 test_target_good = 'vos://cadc.nrc.ca~vospace/file'
 test_target_bad = 'ftp://garbage/target'
@@ -22,7 +22,7 @@ test_dir_bad = 'push'
 class TestTransferReaderWriter(unittest.TestCase):
 
     def test_transfer_constructor(self):
-        # target not of form vos:<something>
+        # target not of form vos: or ad:
         with self.assertRaises( TransferError ):
             Transfer( test_target_bad, test_dir_put )
 
@@ -73,7 +73,9 @@ class TestTransferReaderWriter(unittest.TestCase):
 
         # For a get constructor protocol is not set
         tran = Transfer( test_target_good, test_dir_get )
-        self.assertEqual(0, len(tran.protocols), 'Wrong number of protocols.')
+        self.assertEqual( tran.protocols[0].uri,
+                          DIRECTION_PROTOCOL_MAP[test_dir_get],
+                          'Wrong protocol URI')
 
     def test_roundtrip_put(self):
         tran = Transfer( test_target_good, test_dir_put,
@@ -125,6 +127,13 @@ class TestTransferReaderWriter(unittest.TestCase):
                               'Wrong endpoint, protocol %i' % i )
 
     def test_validation(self):
+        # VOSPACE_20
+        tran = Transfer( test_target_good, test_dir_put,
+                         version=VOSPACE_20 )
+        xml_str = TransferWriter().write(tran)
+        tran2 = TransferReader().read(xml_str)
+
+        # VOSPACE_21
         tran = Transfer( test_target_good, test_dir_put,
                          properties = {'LENGTH':'1234'},
                          version=VOSPACE_21 )

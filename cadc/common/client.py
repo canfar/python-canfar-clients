@@ -75,6 +75,7 @@ import logging
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
+from requests.auth import HTTPBasicAuth
 
 # disable the unverified HTTPS call warnings
 requests.packages.urllib3.disable_warnings()
@@ -84,14 +85,18 @@ _SSL_VERSION = 'TLSv1'
 class SSLAdapter(HTTPAdapter):
     """An HTTPS Transport Adapter that uses an arbitrary SSL version."""
 
-    def __init__(self, ssl_version=None, cert_filename=None, **kwargs):
+    def __init__(self, ssl_version=None, cert_filename=None, logger=None,
+                 **kwargs):
         self.ssl_version = ssl_version
         self.cert = cert_filename
+        self.logger = logger
+        self.session = None
 
         super(SSLAdapter, self).__init__(**kwargs)
 
     def init_poolmanager(self, connections, maxsize, block=False, **kwargs):
-        logger.debug("Connecting using {}".format(self.cert))
+        if self.logger is not None:
+            self.logger.debug("Connecting using {}".format(self.cert))
 
         self.poolmanager = PoolManager(num_pools=connections,
                                        maxsize=maxsize,
@@ -127,8 +132,11 @@ class BaseClient(object):
             self.basic_auth = HTTPBasicAuth(username, password)
             self.is_authorized = True
 
-        # Base URL for web services. Clients should append to this
-        # URL the particular service path
+        # Create a session
+        self._create_session()
+
+        # Base URL for web services.
+        # Clients will probably append a specific service
 
         if self.is_authorized:
             self.protocol = 'https'
@@ -138,12 +146,11 @@ class BaseClient(object):
         self.host = 'www.canfar.phys.uvic.ca'
         self.base_url = '%s://%s' % (self.protocol, self.host)
 
-
         # Clients should add entries to this dict for specialized
         # conversion of HTTP error codes into particular exceptions.
         #
         # Use this form to include a search string in the response to
-        # handle multiple possibilities:
+        # handle multiple possibilities for a single HTTP code.
         #     XXX : {'SEARCHSTRING1' : exceptionInstance1,
         #            'SEARCHSTRING2' : exceptionInstance2}
         #
@@ -184,15 +191,18 @@ class BaseClient(object):
             raise
 
     def _upload_xml(self, url, xml_string, method):
-        """ PUT or POST XML string to URL, return the response """
+        """ PUT or POST XML string to URL, return the response object"""
 
-        self.logger.debug('Uploading (%s) XML: %s' % (xml_string, method))
+        self.logger.debug('%s to (%s):\n%s' % (method, url, xml_string) )
 
-        s = self._create_session()
+        headers = {'content-type': 'text/xml'}
+
         if method == 'PUT':
-            response = s.put(url, data=xml_string, verify=False)
+            response = self.session.put(url, data=xml_string, verify=False,
+                                        headers=headers)
         else:
-            response = s.post(url, data=xml_string, json=None, verify=False)
+            response = self.session.post(url, data=xml_string, json=None,
+                                         verify=False, headers=headers)
         self.check_exception(response)
 
         return response
@@ -201,21 +211,28 @@ class BaseClient(object):
         """ GET XML string from URL """
         self.logger.debug('Requesting XML: %s' % url)
 
-        s = self._create_session()
-        response = s.get(url, verify=False)
+        response = self.session.get(url, verify=False)
         self.check_exception(response)
         xml_string = response.text
         xml_string = xml_string.encode('utf-8')
+
+        self.logger.debug('Retrieved XML string:\n%s' % xml_string)
 
         return xml_string
 
     def _create_session(self):
         self.logger.debug('Creating session.')
 
-        s = requests.Session()
-        s.mount('https://', SSLAdapter(_SSL_VERSION,
-                                       self.certificate_file_location))
-        return s
+        # Note that the cert goes into the adapter, but we can also
+        # use name/password for the auth. We may want to enforce the
+        # usage of only the cert in case both name/password and cert
+        # are provided.
+        self.session = requests.Session()
+        self.session.auth = self.basic_auth
+        self.session.mount('https://',
+                           SSLAdapter(_SSL_VERSION,
+                                      self.certificate_file_location,
+                                      logger=self.logger))
 
     def _make_logger(self):
         """ Override to initialize loggers for different clients """

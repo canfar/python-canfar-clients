@@ -38,16 +38,16 @@ class TransferReader(object):
         if validate:
             if VOSPACE_SCHEMA[version] is None:
                 # .xsd hasn't been loaded in yet
-                try:
-                    filepath = os.path.dirname(__file__) + \
-                        '/' + VOSPACE_SCHEMA_RESOURCE[version]
+                filepath = os.path.dirname(__file__) + \
+                    '/' + VOSPACE_SCHEMA_RESOURCE[version]
 
+                try:
                     with open(filepath) as f:
                         schema_xml = etree.parse(f)
                         VOSPACE_SCHEMA[version] = etree.XMLSchema(schema_xml)
-                except:
-                    raise TransferReaderError('Unable to load schema ' + \
-                                                  VOSPACE_SCHEMA_RESOURCE[version])
+                except Exception as e:
+                    raise TransferReaderError('Unable to load schema %s: %s' % \
+                                                  (filepath, str(e)) )
             VOSPACE_SCHEMA[version].assertValid(xml)
 
         # Continue with required nodes
@@ -68,7 +68,7 @@ class TransferReader(object):
         for p in xml.findall(VOS + 'protocol'):
             uri = p.attrib['uri']
             e = p.find(VOS + 'endpoint')
-            if e:
+            if e is not None:
                 endpoint = e.text
             else:
                 endpoint = None

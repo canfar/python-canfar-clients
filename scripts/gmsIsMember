@@ -32,8 +32,8 @@ if __name__=='__main__':
     try:
         c = GroupsClient(certfile)
         # get the gmsclient logger
-        logger = get_logger(verbose=args.verbose, debug=args.debug,
-                            quiet=args.quiet)
+        logger = c.get_logger(verbose=args.verbose, debug=args.debug,
+                   	         quiet=args.quiet)
 
         is_member = c.is_member(groupnames,role=role)
     except:

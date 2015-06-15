@@ -44,6 +44,10 @@ class Transfer(object):
             # If we're doing a put and no protocol specified, set default
             self.add_protocol(
                 Protocol( DIRECTION_PROTOCOL_MAP['pushToVoSpace'] ) )
+        elif self.direction == 'pullFromVoSpace':
+            # If we're doing a pull and no protocol specified, set default
+            self.add_protocol(
+                Protocol( DIRECTION_PROTOCOL_MAP['pullFromVoSpace'] ) )
 
     def set_version(self, version_in):
         """ Set a valid VOSpace version """
@@ -54,9 +58,10 @@ class Transfer(object):
 
     def set_target(self, target_in):
         """ Set target with basic validation """
-        parts = urlparse(target_in)
-        if parts.scheme.lower() != 'vos':
-            raise TransferError("Target should be of the form vos://...")
+        scheme = urlparse(target_in).scheme.lower()
+        if scheme not in ['vos', 'ad']:
+            raise TransferError(
+                "Target should be of the form vos:... or ad:...")
         self.target = target_in
 
     def set_direction(self, direction_in):
