@@ -76,6 +76,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 from requests.auth import HTTPBasicAuth
+from cadc.common import exceptions
 
 # disable the unverified HTTPS call warnings
 requests.packages.urllib3.disable_warnings()
@@ -158,7 +159,9 @@ class BaseClient(object):
         #     XXX : exceptionInstance
         #
         # The actual conversion is performed by get_exception()
-        self._HTTP_STATUS_CODE_EXCEPTIONS = dict()
+        self._HTTP_STATUS_CODE_EXCEPTIONS = {
+            401 : exceptions.UnauthorizedException()
+            }
 
 
     def get_current_user_dn(self):

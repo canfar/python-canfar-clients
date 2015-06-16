@@ -107,9 +107,6 @@ class GroupsClient(BaseClient):
         self._HTTP_STATUS_CODE_EXCEPTIONS[409] = \
             exceptions.GroupExistsException()
 
-        self._HTTP_STATUS_CODE_EXCEPTIONS[401] = \
-            exceptions.UnauthorizedException()
-
     def create_group(self, group):
         """
             Persist the given Group

@@ -65,11 +65,9 @@
 # *  $Revision: 4 $
 # *
 # ************************************************************************
-__author__ = 'jenkinsd'
 
-
-class GroupNotFoundException(Exception):
-    """Raised when a group is sought, but not found.
+class UnauthorizedException(Exception):
+    """Raised when the user is not allowed to perform an action.
 
     Attributes:
         msg  -- explanation of why the specific transition is not allowed
@@ -79,24 +77,3 @@ class GroupNotFoundException(Exception):
         self.msg = msg
 
 
-class GroupExistsException(Exception):
-    """Raised when a create group operation fails due to the existence of the
-    Group.
-
-    Attributes:
-        msg  -- explanation of why the specific transition is not allowed
-    """
-
-    def __init__(self, msg=None):
-        self.msg = msg
-
-
-class UserNotFoundException(Exception):
-    """Raised when a user is sought, but not found.
-
-    Attributes:
-    msg  -- explanation of why the specific action is not allowed
-    """
-
-    def __init__(self, msg=None):
-        self.msg = msg
