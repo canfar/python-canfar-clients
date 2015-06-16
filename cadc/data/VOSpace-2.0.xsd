@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema targetNamespace="http://www.ivoa.net/xml/VOSpace/v2.0"
         elementFormDefault="qualified" attributeFormDefault="unqualified"
-        xmlns:xs="http://www.w3.org/2001/XMLSchema"
-        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:vos="http://www.ivoa.net/xml/VOSpace/v2.0"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:vos="http://www.ivoa.net/xml/VOSpace/v2.0"
         xmlns:uws="http://www.ivoa.net/xml/UWS/v1.0" xmlns:xlink="http://www.w3.org/1999/xlink">
 
         <xs:import namespace="http://www.ivoa.net/xml/UWS/v1.0"
