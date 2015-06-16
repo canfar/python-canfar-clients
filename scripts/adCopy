@@ -23,6 +23,10 @@ if __name__=='__main__':
 
     certfile=args.certfile
     dir=args.dir
+    if dir == 'put':
+        is_put = True
+    else:
+        is_put = False
     uri = args.uri
     file = args.file
     if file is None:
@@ -34,7 +38,8 @@ if __name__=='__main__':
 
     # Create a data client and logger
     try:
-        c = DataClient(certfile=certfile)
+        # Schema validation is slow due to large initial overhead (~1.5s) ?
+        c = DataClient(certfile=certfile, schema_validate=False)
         logger = c.get_logger(verbose=args.verbose, debug=args.debug,
                               quiet=args.quiet)
     except Exception as e:
@@ -44,14 +49,10 @@ if __name__=='__main__':
 
     # Copy file
     try:
-        if dir == 'get':
-            c.get_file(uri,file)
+        c.transfer_file(uri,file,is_put)
 
-        #else:
-        #    c.put_file
-
-    except:
-        logger.exception("Failed to copy file.")
+    except Exception as e:
+        logger.exception("Failed to copy file:\n%s" % str(e) )
         sys.exit(1)
 
     sys.exit(0)

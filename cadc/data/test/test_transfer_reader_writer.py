@@ -82,7 +82,7 @@ class TestTransferReaderWriter(unittest.TestCase):
                          properties = {'LENGTH':'1234'},
                          version=VOSPACE_21 )
         xml_str = TransferWriter().write(tran)
-        tran2 = TransferReader().read(xml_str)
+        tran2 = TransferReader(validate=True).read(xml_str)
 
         self.assertEqual( tran.target, tran2.target, 'Wrong target.' )
         self.assertEqual( tran.direction, tran2.direction, 'Wrong direction.' )
@@ -109,7 +109,7 @@ class TestTransferReaderWriter(unittest.TestCase):
                          version=VOSPACE_21 )
 
         xml_str = TransferWriter().write(tran)
-        tran2 = TransferReader().read(xml_str)
+        tran2 = TransferReader(validate=True).read(xml_str)
 
         self.assertEqual( tran.target, tran2.target, 'Wrong target.' )
         self.assertEqual( tran.direction, tran2.direction,
@@ -131,7 +131,7 @@ class TestTransferReaderWriter(unittest.TestCase):
         tran = Transfer( test_target_good, test_dir_put,
                          version=VOSPACE_20 )
         xml_str = TransferWriter().write(tran)
-        tran2 = TransferReader().read(xml_str)
+        tran2 = TransferReader(validate=True).read(xml_str)
 
         # VOSPACE_21
         tran = Transfer( test_target_good, test_dir_put,
@@ -144,12 +144,12 @@ class TestTransferReaderWriter(unittest.TestCase):
         junk = etree.SubElement(xml, 'junk')
         xml_str2 = etree.tostring(xml,encoding='UTF-8',pretty_print=True)
 
-        # should not raise exception
-        tran2 = TransferReader().read(xml_str2, validate=False)
+        # should not raise exception because validation turned off by default
+        tran2 = TransferReader().read(xml_str2)
 
-        # validation is default, should complain
+        # should now raise exception with validation turned on
         with self.assertRaises( etree.DocumentInvalid ):
-            tran2 = TransferReader().read(xml_str2)
+            tran2 = TransferReader(validate=True).read(xml_str2)
 
 def run():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestTransferReaderWriter)

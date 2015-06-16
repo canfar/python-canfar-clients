@@ -16,7 +16,10 @@ class TransferReader(object):
     Construct a Transfer object from XML source
     """
 
-    def read(self,xml_string,validate=True):
+    def __init__(self, validate=False):
+        self.validate = validate
+
+    def read(self,xml_string):
         """
         Read Transfer from an XML document string
         """
@@ -35,7 +38,7 @@ class TransferReader(object):
         VOS = '{%s}' % NS                  # VOS namespace string
 
         # Schema validation now that we know the version
-        if validate:
+        if self.validate:
             if VOSPACE_SCHEMA[version] is None:
                 # .xsd hasn't been loaded in yet
                 filepath = os.path.dirname(__file__) + \
