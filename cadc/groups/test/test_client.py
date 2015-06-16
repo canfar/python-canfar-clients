@@ -86,7 +86,7 @@ test_x500_dn = 'C=ca,O=someorg,OU=someunit,CN=somebody'
 test_http_username = 'somebody'
 test_base_url = "https://some/server/ac"
 test_group_id = 'testgroup_for_somebody'
-
+test_headers = {'content-type': 'text/xml'}
 mock_session = mock.Mock(spec=requests.Session())
 mock_response = mock.Mock(spec=requests.Response())
 
@@ -94,10 +94,10 @@ logger = logging.getLogger('gmsclient')
 
 
 class ClientForTest(GroupsClient):
-    """Subclass of GroupsClient with new constructor"""
+    """Subclass of GroupsClient with some hacks"""
 
     def __init__(self, certfile):
-        GroupsClient.__init__(self, certfile)
+        super(ClientForTest,self).__init__(certfile)
         self.base_url = test_base_url
         self.certificate_file_location = test_certificate_name
         self.current_user_dn = test_x500_dn
@@ -112,7 +112,7 @@ class ClientForTest(GroupsClient):
             f.close()
 
     def _create_session(self):
-        return mock_session
+        self.session = mock_session
 
     def get_current_user_dn(self):
         return test_x500_dn
@@ -155,7 +155,8 @@ class TestClient(unittest.TestCase):
         mock_session.put.assert_called_with(test_base_url + "/groups",
                                             data=test_create_group_xml.
                                             replace('\r', ''),
-                                            verify=False)
+                                            verify=False,
+                                            headers=test_headers)
 
     def test_get_group(self):
         c = ClientForTest(test_certificate_name)
@@ -199,11 +200,13 @@ class TestClient(unittest.TestCase):
         c.update_group(group)
 
         self.assertTrue(mock_session.post.called, "POST was never called.")
-        mock_session.post.assert_called_with(test_base_url + "/groups/" + group.group_id,
+        mock_session.post.assert_called_with(test_base_url + "/groups/" + \
+                                                 group.group_id,
                                              data=test_create_group_xml.
                                              replace('\r', ''),
                                              verify=False,
-                                             json=None)
+                                             json=None,
+                                             headers=test_headers)
 
 
 def run():
