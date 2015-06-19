@@ -1,0 +1,5 @@
+<vos:transfer xmlns:vos="http://www.ivoa.net/xml/VOSpace/v2.0">
+  <vos:target>ad:TEST/foo.fits</vos:target>
+  <vos:direction>pushToVoSpace</vos:direction>
+  <vos:protocol uri="ivo://ivoa.net/vospace/core#httpput"/>
+</vos:transfer>

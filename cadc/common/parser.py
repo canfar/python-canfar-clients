@@ -12,12 +12,15 @@ class BaseParser(ArgumentParser):
 
         self.add_argument('--certfile', type=str,
                           help="location of your CADC security certificate file"
-                          + " (default=$HOME/.ssl/cadcproxy.pem)",
+                          + " (default=$HOME/.ssl/cadcproxy.pem, " + \
+                              "otherwise uses $HOME/.netrc for name/password)",
                           default=os.path.join(os.getenv("HOME", "."),
                                                  ".ssl/cadcproxy.pem"))
+        self.add_argument('--anonymous', action="store_true", default=False,
+                          help='Force anonymous connection, ' +
+                          'ignoring certfile and .netrc entries')
         self.add_argument('--version', action='version',
                           version=__version__.version)
-
         self.add_argument('--verbose', action="store_true", default=False,
                           help='verbose messages')
         self.add_argument('--debug', action="store_true", default=False,

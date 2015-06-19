@@ -6,29 +6,36 @@ from cadc.data.client import DataClient
 from cadc.common.parser import BaseParser
 import sys
 import logging
-
 description = "Get or Put a file to the data web service."
 
 if __name__=='__main__':
 
     # Parse the command line
     parser = BaseParser(description=description)
-    parser.add_argument('dir', choices=['get','put'], help='direction')
-    parser.add_argument('--uri', required=True,
-                        help="URI of file (e.g., 'ad:ARCHIVE/filename')")
-    parser.add_argument('--file', default=None,
-                        help='Local file name')
+    parser.add_argument('dir', choices=['get','put'], help='Direction')
+    parser.add_argument('archive', help='Archive name')
+    parser.add_argument('file', help='File on local disk')
+    parser.add_argument('--stream', default=None, help='Stream name')
+    parser.add_argument('--filename', default=None,
+                        help='Filename in archive')
 
     args=parser.parse_args()
 
     certfile=args.certfile
+    anonymous=args.anonymous
     dir=args.dir
     if dir == 'put':
         is_put = True
     else:
         is_put = False
-    uri = args.uri
+    archive = args.archive
     file = args.file
+    stream = args.stream
+    if args.filename is None:
+        filename = file
+    else:
+        filename = args.filename
+
     if file is None:
         if dir == 'put':
             raise ValueError("--file must be specified for a put")
@@ -36,23 +43,37 @@ if __name__=='__main__':
             # Default file name from URI (text after final '/')
             file = (uri.split('/'))[-1]
 
+    # File URI
+    uri='ad:%s/%s' % (archive,filename)
+
     # Create a data client and logger
     try:
         # Schema validation is slow due to large initial overhead (~1.5s) ?
-        c = DataClient(certfile=certfile, schema_validate=False)
+        c = DataClient(certfile=certfile, schema_validate=False,
+                       host='test.canfar.phys.uvic.ca', anonymous=anonymous)
         logger = c.get_logger(verbose=args.verbose, debug=args.debug,
                               quiet=args.quiet)
+        logger.debug("Start")
     except Exception as e:
         print e
+        #logger.debug("End")
         sys.exit(1)
 
+    logger.debug("Client authorized: %s, certfile: %s, name/password: %s" % \
+                     (str(c.is_authorized), str(c.certificate_file_location),
+                      str(c.basic_auth is not None)) )
+
+    # hack for VOSpace testing
+    c.base_url = '%s://%s/vospace/synctrans' % (c.protocol,c.host)
+    uri = 'vos:/echapin/%s' % filename
 
     # Copy file
     try:
-        c.transfer_file(uri,file,is_put)
-
+        c.transfer_file(uri,file,is_put=is_put,stream=stream)
     except Exception as e:
         logger.exception("Failed to copy file:\n%s" % str(e) )
+        logger.debug("End")
         sys.exit(1)
 
+    logger.debug("End")
     sys.exit(0)

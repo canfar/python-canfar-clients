@@ -66,9 +66,9 @@
 # *
 # ************************************************************************
 
-# Python client base class for interacting with CADC services. Main purpose
-# is to provide common framework for authorization, logging, and RESTful
-# interactions.
+# Python client base class for interacting with CANFAR and CADC
+# services.  Main purpose is to provide common framework for
+# authorization, logging, and RESTful interactions.
 
 from OpenSSL import crypto
 import logging
@@ -77,6 +77,8 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 from requests.auth import HTTPBasicAuth
 from cadc.common import exceptions
+import os.path
+import netrc
 
 # disable the unverified HTTPS call warnings
 requests.packages.urllib3.disable_warnings()
@@ -109,42 +111,58 @@ class SSLAdapter(HTTPAdapter):
 class BaseClient(object):
     """Base class for interacting with CADC services"""
 
-    def __init__(self, certfile=None, username=None, password=None):
+    def __init__(self, certfile=None, anonymous=False,
+                 host='www.canfar.phys.uvic.ca'):
         """
         Client constructor
 
-        certfile -- Path to CADC proxy certificate
-        username -- User name (if using HTTPBasicAuth instead of certfile)
-        password -- Password (if using HTTPBasicAuth instead of certfile)
+        certfile  -- Path to CADC proxy certificate
+        anonymous -- Force anonymous client, regardless of cert/.netrc
+        host      -- Override default service host
         """
 
         self._make_logger()
+        self.host = host
 
-        # Determine whether we are anonymous or authorized
+        # Unless the caller specifically requests an anonymous client,
+        # check first for a certificate, and then a name+password in
+        # .netrc.
         self.is_authorized = False
         self.certificate_file_location = None
         self.basic_auth = None
 
-        if certfile is not None:
-            self.certificate_file_location = certfile
-            self.is_authorized = True
+        if not anonymous:
+            if (certfile is not None) and (certfile is not ''):
+                if os.path.isfile(certfile):
+                    self.certificate_file_location = certfile
+                    self.is_authorized = True
+                else:
+                    print "Unable to open supplied certfile '%s':" % certfile +\
+                        " Ignoring."
 
-        if username is not None and password is not None:
-            self.basic_auth = HTTPBasicAuth(username, password)
-            self.is_authorized = True
+            if not self.is_authorized:
+                try:
+                    auth = netrc.netrc().authenticators(self.host)
+                    username=auth[0]
+                    password=auth[2]
+
+                    self.basic_auth = HTTPBasicAuth(username, password)
+                    self.is_authorized = True
+                except:
+                    # .netrc check happens automatically, so no need for
+                    # a message if it fails
+                    pass
 
         # Create a session
         self._create_session()
 
         # Base URL for web services.
         # Clients will probably append a specific service
-
         if self.is_authorized:
             self.protocol = 'https'
         else:
             self.protocol = 'http'
 
-        self.host = 'www.canfar.phys.uvic.ca'
         self.base_url = '%s://%s' % (self.protocol, self.host)
 
         # Clients should add entries to this dict for specialized
@@ -172,6 +190,10 @@ class BaseClient(object):
             jenkinsd 2015.02.06
         """
 
+        if self.certificate_file_location is not None:
+            raise ValueError(
+                'Unable to extract user DN because no cert provided')
+
         # Get the dn from the x509 cert
         self.logger.debug('Read dn from x509 cert {}'
                      .format(self.certificate_file_location))
@@ -193,19 +215,24 @@ class BaseClient(object):
             self.logger.error('Failed to parse certfile: {}'.format(str(e)))
             raise
 
-    def _upload_xml(self, url, xml_string, method):
+    def _upload_xml(self, url, xml_string, method, headers=None):
         """ PUT or POST XML string to URL, return the response object"""
 
         self.logger.debug('%s to (%s):\n%s' % (method, url, xml_string) )
 
-        headers = {'content-type': 'text/xml'}
+        if headers is not None:
+            local_headers = headers.copy()
+        else:
+            local_headers = dict()
+
+        local_headers['content-type'] = 'text/xml'
 
         if method == 'PUT':
             response = self.session.put(url, data=xml_string, verify=False,
-                                        headers=headers)
+                                        headers=local_headers)
         else:
             response = self.session.post(url, data=xml_string, json=None,
-                                         verify=False, headers=headers)
+                                         verify=False, headers=local_headers)
         self.check_exception(response)
 
         return response
@@ -232,10 +259,12 @@ class BaseClient(object):
         # are provided.
         self.session = requests.Session()
         self.session.auth = self.basic_auth
-        self.session.mount('https://',
-                           SSLAdapter(_SSL_VERSION,
-                                      self.certificate_file_location,
-                                      logger=self.logger))
+
+        if self.certificate_file_location is not None:
+            self.session.mount('https://',
+                               SSLAdapter(_SSL_VERSION,
+                                          self.certificate_file_location,
+                                          logger=self.logger))
 
     def _make_logger(self):
         """ Override to initialize loggers for different clients """

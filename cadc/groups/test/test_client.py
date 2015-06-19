@@ -68,7 +68,6 @@
 # ************************************************************************
 
 """ Defines TestClient class """
-import logging
 import mock
 import unittest
 import requests
@@ -89,8 +88,6 @@ test_group_id = 'testgroup_for_somebody'
 test_headers = {'content-type': 'text/xml'}
 mock_session = mock.Mock(spec=requests.Session())
 mock_response = mock.Mock(spec=requests.Response())
-
-logger = logging.getLogger('gmsclient')
 
 
 class ClientForTest(GroupsClient):

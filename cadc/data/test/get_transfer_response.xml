@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vos:transfer xmlns:vos="http://www.ivoa.net/xml/VOSpace/v2.0">
+  <vos:target>ad:TEST/foo.fits</vos:target>
+  <vos:direction>pullFromVoSpace</vos:direction>
+  <vos:protocol uri="ivo://ivoa.net/vospace/core#httpget">
+    <vos:endpoint>http://endpoint1</vos:endpoint>
+  </vos:protocol>
+  <vos:protocol uri="ivo://ivoa.net/vospace/core#httpget">
+    <vos:endpoint>http://endpoint2</vos:endpoint>
+  </vos:protocol>
+  <vos:keepBytes>true</vos:keepBytes>
+</vos:transfer>
