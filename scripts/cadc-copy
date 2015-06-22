@@ -6,7 +6,7 @@ from cadc.data.client import DataClient
 from cadc.common.parser import BaseParser
 import sys
 import logging
-description = "Get or Put a file to the data web service."
+description = "Get or Put a file to the CADC storage system."
 
 if __name__=='__main__':
 
