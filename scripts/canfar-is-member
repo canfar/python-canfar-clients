@@ -2,8 +2,8 @@
 """Given an x509 cert determine if a user is a member of at least one
 of a list of groups"""
 
-from cadc.groups.client import GroupsClient
-from cadc.groups.role import Role
+from canfar.groups.client import GroupsClient
+from canfar.groups.role import Role
 from cadc.common.parser import BaseParser
 import sys
 

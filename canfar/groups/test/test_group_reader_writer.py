@@ -70,75 +70,103 @@
 import os
 import sys
 import unittest
+from datetime import datetime
 
 # put local code at top of the search path
 sys.path.insert(0, os.path.abspath('../../../'))
 
-from cadc.groups.group_property import GroupProperty
-from cadc.groups.group_xml.group_property_reader import GroupPropertyReader
-from cadc.groups.group_xml.group_property_writer import GroupPropertyWriter
+from canfar.groups.group import Group
+from canfar.groups.group_property import GroupProperty
+from canfar.groups.identity import Identity
+from canfar.groups.user import User
+from canfar.groups.group_xml.group_reader import GroupReader
+from canfar.groups.group_xml.group_writer import GroupWriter
 
-
-class TestGroupPropertyReaderWriter(unittest.TestCase):
-
-    def test_group_reader_errors(self):
-        reader = GroupPropertyReader()
-
-        self.assertRaises(ValueError, reader.read, None)
-        self.assertRaises(ValueError, reader.read, '')
-        self.assertRaises(ValueError, reader.get_group_property, None)
-        self.assertRaises(AttributeError, reader.get_group_property, '')
-
-    def test_group_writer_errors(self):
-        writer = GroupPropertyWriter()
-
-        self.assertRaises(AssertionError, writer.write, None)
-        self.assertRaises(AssertionError, writer.write, '')
-        self.assertRaises(AttributeError, writer.get_property_element, None)
-        self.assertRaises(AttributeError, writer.get_property_element, '')
-        self.assertRaises(AttributeError, writer.get_property_element, None)
-
-
-    def test_read_only_true(self):
-        expected = GroupProperty('key', 'value', True)
-
-        writer = GroupPropertyWriter()
-        xml_string = writer.write(expected)
+class TestGroupReaderWriter(unittest.TestCase):
+    def test_minimal_group(self):
+        expected = Group('groupID', None)
+        writer = GroupWriter()
+        xml_string = writer.write(expected, False)
 
         self.assertIsNotNone(xml_string)
         self.assertTrue(len(xml_string) > 0)
 
-        reader = GroupPropertyReader()
+        reader = GroupReader()
 
         actual = reader.read(xml_string)
 
-        self.assertIsNotNone(actual)
-        self.assertEqual(actual.key, expected.key)
-        self.assertEqual(actual.value, expected.value)
-        self.assertEqual(actual.read_only, expected.read_only)
+        self.assertIsNotNone(expected.group_id)
+        self.assertIsNotNone(actual.group_id)
+        self.assertEqual(actual.group_id, expected.group_id)
 
-    def test_read_only_false(self):
-        expected = GroupProperty('key', 'value', False)
+        self.assertIsNone(expected.owner)
+        self.assertIsNone(actual.owner)
 
-        writer = GroupPropertyWriter()
-        xml_string = writer.write(expected)
+        self.assertIsNone(expected.description)
+        self.assertIsNone(actual.description)
+
+        self.assertIsNone(expected.last_modified)
+        self.assertIsNone(actual.last_modified)
+
+        self.assertItemsEqual(actual.group_members, expected.group_members)
+        self.assertItemsEqual(actual.user_members, expected.user_members)
+        self.assertItemsEqual(actual.group_admins, expected.group_admins)
+        self.assertItemsEqual(actual.user_admins, expected.user_admins)
+
+    def test_maximal_group(self):
+        expected = Group('groupID', User(Identity('username', 'HTTP')))
+        expected.description = 'description'
+        expected.last_modified = datetime(2014, 01, 20, 19, 45, 37, 0)
+        expected.properties.add(GroupProperty('key1', 'value1', True))
+        expected.properties.add(GroupProperty('key2', 'value2', False))
+
+        group_member1 = Group('groupMember1', User(Identity('uid1', 'UID')))
+        group_member2 = Group('groupMember2', User(Identity('uid2', 'UID')))
+        expected.group_members.add(group_member1)
+        expected.group_members.add(group_member2)
+
+        user_member1 = User(Identity('openid1', 'OpenID'))
+        user_member2 = User(Identity('openid2', 'OpenID'))
+        expected.user_members.add(user_member1)
+        expected.user_members.add(user_member2)
+
+        group_admin1 = Group('adminMember1', User(Identity('x5001', 'X500')))
+        group_admin2 = Group('adminMember2', User(Identity('x5002', 'X500')))
+        expected.group_admins.add(group_admin1)
+        expected.group_admins.add(group_admin2)
+
+        user_admin1 = User(Identity('foo1', 'HTTP'))
+        user_admin2 = User(Identity('foo2', 'HTTP'))
+        expected.user_admins.add(user_admin1)
+        expected.user_admins.add(user_admin2)
+
+        writer = GroupWriter()
+        xml_string = writer.write(expected, True)
 
         self.assertIsNotNone(xml_string)
         self.assertTrue(len(xml_string) > 0)
 
-        reader = GroupPropertyReader()
-
+        reader = GroupReader()
         actual = reader.read(xml_string)
 
-        self.assertIsNotNone(actual)
-        self.assertEqual(actual.key, expected.key)
-        self.assertEqual(actual.value, expected.value)
-        self.assertEqual(actual.read_only, expected.read_only)
+        self.assertIsNotNone(expected.group_id)
+        self.assertIsNotNone(actual.group_id)
+        self.assertEqual(actual.group_id, expected.group_id)
 
+        self.assertEqual(actual.owner.user_id.type, expected.owner.user_id.type)
+        self.assertEqual(actual.owner.user_id.name, expected.owner.user_id.name)
+        self.assertEqual(actual.description, expected.description)
+        self.assertEqual(actual.last_modified, expected.last_modified)
+
+        self.assertSetEqual(actual.properties, expected.properties)
+        self.assertSetEqual(actual.group_members, expected.group_members)
+        self.assertSetEqual(actual.user_members, expected.user_members)
+        self.assertSetEqual(actual.group_admins, expected.group_admins)
+        self.assertSetEqual(actual.user_admins, expected.user_admins)
 
 
 def run():
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestGroupPropertyReaderWriter)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestGroupReaderWriter)
     return unittest.TextTestRunner(verbosity=2).run(suite)
 
 

@@ -27,8 +27,8 @@ elementNotIn ()
 }
 
 # Add to this array as needed.
-UNIT_TEST_DIRS=("cadc/groups" "cadc/data")
-IGNORE_TEST_SCRIPTS=("test_group_reader_writer.py")
+UNIT_TEST_DIRS=("canfar/groups" "cadc/data")
+#IGNORE_TEST_SCRIPTS=("test_group_reader_writer.py")
 
 for TEST_DIR in "${UNIT_TEST_DIRS[@]}"; do
   cd ${ROOT_DIR}/${TEST_DIR}/test
@@ -38,7 +38,8 @@ for TEST_DIR in "${UNIT_TEST_DIRS[@]}"; do
     elementNotIn "${TEST_SCRIPT}" ${IGNORE_TEST_SCRIPTS}
     if [ ${?} == 1 ]; then
       echo "Running: ${CURR_DIR}/${TEST_SCRIPT}"
-      ${PYTHON} -m trace --count -s -m --ignore-dir=/usr/ ${TEST_SCRIPT}
+      ${PYTHON} -m trace --count -s -m --ignore-dir=${VIRTUAL_ENV}:/usr \
+          ${TEST_SCRIPT}
     else
       echo "Ignoring: ${CURR_DIR}/${TEST_SCRIPT}"
     fi

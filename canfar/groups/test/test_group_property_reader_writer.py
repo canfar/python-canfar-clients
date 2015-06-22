@@ -74,31 +74,71 @@ import unittest
 # put local code at top of the search path
 sys.path.insert(0, os.path.abspath('../../../'))
 
-from cadc.groups.identity import Identity
-from cadc.groups.user import User
-from cadc.groups.group_xml.user_reader import UserReader
-from cadc.groups.group_xml.user_writer import UserWriter
+from canfar.groups.group_property import GroupProperty
+from canfar.groups.group_xml.group_property_reader import GroupPropertyReader
+from canfar.groups.group_xml.group_property_writer import GroupPropertyWriter
 
 
-class TestUserReaderWriter(unittest.TestCase):
-    def test_read_write(self):
-        expected = User(Identity('openid1', 'OpenID'))
+class TestGroupPropertyReaderWriter(unittest.TestCase):
 
-        writer = UserWriter()
+    def test_group_reader_errors(self):
+        reader = GroupPropertyReader()
+
+        self.assertRaises(ValueError, reader.read, None)
+        self.assertRaises(ValueError, reader.read, '')
+        self.assertRaises(ValueError, reader.get_group_property, None)
+        self.assertRaises(AttributeError, reader.get_group_property, '')
+
+    def test_group_writer_errors(self):
+        writer = GroupPropertyWriter()
+
+        self.assertRaises(AssertionError, writer.write, None)
+        self.assertRaises(AssertionError, writer.write, '')
+        self.assertRaises(AttributeError, writer.get_property_element, None)
+        self.assertRaises(AttributeError, writer.get_property_element, '')
+        self.assertRaises(AttributeError, writer.get_property_element, None)
+
+
+    def test_read_only_true(self):
+        expected = GroupProperty('key', 'value', True)
+
+        writer = GroupPropertyWriter()
         xml_string = writer.write(expected)
 
         self.assertIsNotNone(xml_string)
         self.assertTrue(len(xml_string) > 0)
 
-        reader = UserReader()
+        reader = GroupPropertyReader()
+
         actual = reader.read(xml_string)
 
         self.assertIsNotNone(actual)
-        self.assertEqual(actual.user_id.type, expected.user_id.type)
-        self.assertEqual(actual.user_id.name, expected.user_id.name)
+        self.assertEqual(actual.key, expected.key)
+        self.assertEqual(actual.value, expected.value)
+        self.assertEqual(actual.read_only, expected.read_only)
+
+    def test_read_only_false(self):
+        expected = GroupProperty('key', 'value', False)
+
+        writer = GroupPropertyWriter()
+        xml_string = writer.write(expected)
+
+        self.assertIsNotNone(xml_string)
+        self.assertTrue(len(xml_string) > 0)
+
+        reader = GroupPropertyReader()
+
+        actual = reader.read(xml_string)
+
+        self.assertIsNotNone(actual)
+        self.assertEqual(actual.key, expected.key)
+        self.assertEqual(actual.value, expected.value)
+        self.assertEqual(actual.read_only, expected.read_only)
+
+
 
 def run():
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestUserReaderWriter)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestGroupPropertyReaderWriter)
     return unittest.TextTestRunner(verbosity=2).run(suite)
 
 

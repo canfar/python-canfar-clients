@@ -4,7 +4,7 @@
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 #
-#  (c) 2014.                            (c) 2014.
+# (c) 2014.                            (c) 2014.
 #  Government of Canada                 Gouvernement du Canada
 #  National Research Council            Conseil national de recherches
 #  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -67,32 +67,33 @@
 #
 # ***********************************************************************
 
-from lxml import etree
-from cadc.groups.user import User
+import os
+import sys
+import unittest
+
+# put local code at top of the search pat
+sys.path.insert(0, os.path.abspath('../../../'))
+
+from canfar.groups.group_property import GroupProperty
+
+class TestGroupProperty(unittest.TestCase):
+
+    def test_errors(self):
+        self.assertRaises(ValueError, GroupProperty, None, 'value', True)
+        self.assertRaises(ValueError, GroupProperty, 'key', None, True)
+
+    def test_group_property(self):
+        group_property = GroupProperty('key', 'value', True)
+
+        self.assertIsNotNone(group_property)
+        self.assertEqual(group_property.key, 'key')
+        self.assertEqual(group_property.value, 'value')
+        self.assertEqual(group_property.read_only, True)
+
+def run():
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestGroupProperty)
+    return unittest.TextTestRunner(verbosity=2).run(suite)
 
 
-class UserWriter(object):
-
-    def write(self, user, declaration=False):
-
-        assert isinstance(user, User), 'user is not a User instance'
-
-        return etree.tostring(self.get_user_element(user),
-                              xml_declaration=declaration,
-                              encoding='UTF-8',
-                              pretty_print=True)
-
-    def get_user_element(self, user):
-        user_element = etree.Element('user')
-        userid_element = etree.SubElement(user_element, 'userID')
-        identity_element = etree.SubElement(userid_element, 'identity')
-        identity_element.set('type', user.user_id.type)
-        identity_element.text = user.user_id.name
-        if user.identities:
-            identities_element = etree.SubElement(user_element, 'identities')
-            for identity in user.identities:
-                identity_element = etree.SubElement(identities_element, 'identity')
-                identity_element.set('type', identity.type)
-                identity_element.text = identity.name
-
-        return user_element
+if __name__ == '__main__':
+    run()

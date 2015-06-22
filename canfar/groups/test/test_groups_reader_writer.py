@@ -74,11 +74,11 @@ import unittest
 # put local code at top of the search path
 sys.path.insert(0, os.path.abspath('../../../'))
 
-from cadc.groups.group import Group
-from cadc.groups.identity import Identity
-from cadc.groups.user import User
-from cadc.groups.group_xml.groups_reader import GroupsReader
-from cadc.groups.group_xml.groups_writer import GroupsWriter
+from canfar.groups.group import Group
+from canfar.groups.identity import Identity
+from canfar.groups.user import User
+from canfar.groups.group_xml.groups_reader import GroupsReader
+from canfar.groups.group_xml.groups_writer import GroupsWriter
 
 
 class TestGroupsReaderWriter(unittest.TestCase):

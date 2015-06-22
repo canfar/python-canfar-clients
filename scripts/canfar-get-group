@@ -1,11 +1,10 @@
 #!python
 """Given an x509 cert determine if a user is a member of at least one
 of a list of groups"""
-from cadc.groups import exceptions
-from cadc.groups.client import GroupsClient
-from cadc.groups.client import get_logger
-from cadc.groups.group_xml.group_reader import GroupReader
-from cadc.groups.group_xml.group_writer import GroupWriter
+from canfar.groups import exceptions
+from canfar.groups.client import GroupsClient
+from canfar.groups.group_xml.group_reader import GroupReader
+from canfar.groups.group_xml.group_writer import GroupWriter
 from cadc.common.parser import BaseParser
 import sys
 

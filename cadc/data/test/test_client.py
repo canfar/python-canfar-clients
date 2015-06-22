@@ -156,7 +156,7 @@ class TestClient(unittest.TestCase):
         self.assertIsNone(c.certificate_file_location)
         self.assertIsNotNone(c.basic_auth)
         self.assertTrue(c.is_authorized)
-        self.assertEqual(c.protocol,'https')
+        self.assertEqual(c.protocol,'http')
 
         # certfile authorization, no netrc. Patch open as well so that
         # it appears to be successful
@@ -188,7 +188,7 @@ class TestClient(unittest.TestCase):
         self.assertIsNone(c.certificate_file_location)
         self.assertIsNotNone(c.basic_auth)
         self.assertTrue(c.is_authorized)
-        self.assertEqual(c.protocol,'https')
+        self.assertEqual(c.protocol,'http')
 
         # cert and netrc are both provided. Only use cert
         with patch('netrc.netrc.authenticators') as mock_authenticator:
@@ -227,7 +227,7 @@ class TestClient(unittest.TestCase):
     @patch('__builtin__.open')         # fake source file for put
     def test_put_file(self,mock_open,mock_requests_post,mock_session_post,
                       mock_isfile):
-        return
+
         mock_file = MagicMock(spec=file)
         mock_open.return_value = mock_file
 

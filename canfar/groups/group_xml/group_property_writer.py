@@ -1,10 +1,9 @@
-#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 #
-# (c) 2014.                            (c) 2014.
+#  (c) 2014.                            (c) 2014.
 #  Government of Canada                 Gouvernement du Canada
 #  National Research Council            Conseil national de recherches
 #  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -68,49 +67,35 @@
 # ***********************************************************************
 
 from lxml import etree
-from cadc.groups.identity import Identity
-from cadc.groups.user import User
+from canfar.groups.group_property import GroupProperty
 
 
-class UserReader(object):
-    """UserReader """
+class GroupPropertyWriter(object):
+    """
+    Utility class to write a property to a corresponding element
+    """
 
-    def read(self, xml_string):
-        """Build an User object from an XML document string.
+    def write(self, group_property, declaration=False):
 
-        Arguments:
-        xml_string : string of XML containing the User element
-        return : a User object
-        """
-        root = etree.fromstring(xml_string)
-        return self.get_user(root)
+        assert isinstance(group_property, GroupProperty), \
+            'group_property is not a GroupProperty instance'
 
-    def get_user(self, user_element):
-        user_id_element = user_element.find('userID')
-        if user_id_element is None:
-            raise UserParsingException("userID element not found in user element")
+        return etree.tostring(self.get_property_element(group_property),
+                              xml_declaration=declaration,
+                              encoding='UTF-8',
+                              pretty_print=True)
 
-        identity_element = user_id_element.find('identity')
-        if identity_element is None:
-            raise UserParsingException("identity element not found in userID element")
+    def get_property_element(self, group_property):
+        property_element = etree.Element('property')
+        property_element.set('key', group_property.key)
+        property_element.text = group_property.value
+        if group_property.read_only:
+            property_element.set('readOnly', "true")
+        if isinstance(group_property.value, (str, unicode)):
+            property_element.set('type', GroupProperty.STRING_TYPE)
+        elif isinstance(group_property.value, int):
+            property_element.set('type', GroupProperty.INTEGER_TYPE)
+        else:
+            raise ValueError('Unsupported value type {}'.format(type(group_property.value)))
 
-        try:
-            identity_type = identity_element.get('type')
-        except KeyError:
-            raise UserParsingException('identity missing required type attribute')
-
-        name = identity_element.text
-        if not name:
-            raise UserParsingException('identity element has no text value')
-
-        return User(Identity(name, identity_type))
-
-
-class UserParsingException(Exception):
-    """A user exception class for catching XML parsing exception"""
-
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+        return property_element

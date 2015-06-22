@@ -70,9 +70,9 @@
 import string
 from lxml import etree
 from group_property_reader import GroupPropertyReader
-from cadc.groups.identity import Identity
-from cadc.groups.group import Group
-from cadc.groups.user import User
+from canfar.groups.identity import Identity
+from canfar.groups.group import Group
+from canfar.groups.user import User
 from cadc.common.util import str2ivoa
 
 GROUP_URI = 'ivo://cadc.nrc.ca/gms#'

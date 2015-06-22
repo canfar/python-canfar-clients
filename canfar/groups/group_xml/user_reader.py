@@ -68,88 +68,49 @@
 # ***********************************************************************
 
 from lxml import etree
-from cadc.groups.group import Group
-from group_property_writer import GroupPropertyWriter
-from user_writer import UserWriter
-from cadc.common.util import date2ivoa
-
-GROUP_URI = 'ivo://cadc.nrc.ca/gms#'
+from canfar.groups.identity import Identity
+from canfar.groups.user import User
 
 
-class GroupWriter(object):
+class UserReader(object):
+    """UserReader """
 
-    def write(self, group, deep_copy=True, declaration=True):
+    def read(self, xml_string):
+        """Build an User object from an XML document string.
 
-        assert isinstance(group, Group), 'group is not a Group instance'
+        Arguments:
+        xml_string : string of XML containing the User element
+        return : a User object
+        """
+        root = etree.fromstring(xml_string)
+        return self.get_user(root)
 
-        return etree.tostring(self.get_group_element(group, deep_copy),
-                              xml_declaration=declaration,
-                              encoding='UTF-8',
-                              pretty_print=True)
+    def get_user(self, user_element):
+        user_id_element = user_element.find('userID')
+        if user_id_element is None:
+            raise UserParsingException("userID element not found in user element")
 
-    def get_group_element(self, group, deep_copy):
-        group_element = etree.Element('group')
-        group_element.set('uri', GROUP_URI + group.group_id)
-        self._add_owner_element(group_element, group.owner)
+        identity_element = user_id_element.find('identity')
+        if identity_element is None:
+            raise UserParsingException("identity element not found in userID element")
 
-        if deep_copy:
-            if group.description is not None:
-                self._add_element(group_element, group.description,
-                                  'description')
-            if group.last_modified is not None:
-                self._add_datetime_element(group_element, group.last_modified,
-                                           'lastModified')
-            self._add_properties(group_element, group.properties)
-            self._add_groups(group_element, group.group_members, 'groupMembers')
-            self._add_users(group_element, group.user_members, 'userMembers')
-            self._add_groups(group_element, group.group_admins, 'groupAdmins')
-            self._add_users(group_element, group.user_admins, 'userAdmins')
+        try:
+            identity_type = identity_element.get('type')
+        except KeyError:
+            raise UserParsingException('identity missing required type attribute')
 
-        return group_element
+        name = identity_element.text
+        if not name:
+            raise UserParsingException('identity element has no text value')
 
-    def _add_owner_element(self, group_element, owner):
-        if owner is None:
-            return
+        return User(Identity(name, identity_type))
 
-        user_writer = UserWriter()
-        owner_element = etree.SubElement(group_element, 'owner')
-        owner_element.append(user_writer.get_user_element(owner))
 
-    def _add_properties(self, group_element, properties):
-        if properties is None or not properties:
-            return
-        properties_element = etree.SubElement(group_element, 'properties')
-        property_writer = GroupPropertyWriter()
-        for property in properties:
-            if property is not None:
-                properties_element.append(property_writer.get_property_element(property))
+class UserParsingException(Exception):
+    """A user exception class for catching XML parsing exception"""
 
-    def _add_groups(self, group_element, groups, tag):
-        if groups is None or not groups:
-            return
-        members_element = etree.SubElement(group_element, tag)
-        for group in groups:
-            members_element.append(self.get_group_element(group, False))
+    def __init__(self, value):
+        self.value = value
 
-    def _add_users(self, parent, users, tag):
-        if users is None or not users:
-            return
-        user_writer = UserWriter()
-        members_element = etree.SubElement(parent, tag)
-        for user in users:
-            members_element.append(user_writer.get_user_element(user))
-
-    def _add_element(self, parent, text, tag):
-        if text is None:
-            return
-        element = etree.SubElement(parent, tag)
-        if isinstance(text, (str, unicode)):
-            element.text = text
-        else:
-            element.text = str(text)
-
-    def _add_datetime_element(self, parent, value, tag):
-        if value is None:
-            return
-        element = etree.SubElement(parent, tag)
-        element.text = date2ivoa(value)
+    def __str__(self):
+        return repr(self.value)

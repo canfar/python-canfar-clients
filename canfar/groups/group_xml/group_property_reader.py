@@ -67,7 +67,7 @@
 # ***********************************************************************
 
 from lxml import etree
-from cadc.groups.group_property import GroupProperty
+from canfar.groups.group_property import GroupProperty
 
 
 class GroupPropertyReader(object):

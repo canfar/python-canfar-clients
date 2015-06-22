@@ -77,8 +77,8 @@ import sys
 # put local code at top of the search path
 sys.path.insert(0, os.path.abspath('../../../'))
 
-from cadc.groups.client import GroupsClient
-from cadc.groups.group_xml.group_reader import GroupReader
+from canfar.groups.client import GroupsClient
+from canfar.groups.group_xml.group_reader import GroupReader
 
 test_certificate_name = "cadcproxy.pem"
 test_x500_dn = 'C=ca,O=someorg,OU=someunit,CN=somebody'

@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
@@ -67,35 +68,31 @@
 # ***********************************************************************
 
 from lxml import etree
-from cadc.groups.group_property import GroupProperty
+from canfar.groups.user import User
 
 
-class GroupPropertyWriter(object):
-    """
-    Utility class to write a property to a corresponding element
-    """
+class UserWriter(object):
 
-    def write(self, group_property, declaration=False):
+    def write(self, user, declaration=False):
 
-        assert isinstance(group_property, GroupProperty), \
-            'group_property is not a GroupProperty instance'
+        assert isinstance(user, User), 'user is not a User instance'
 
-        return etree.tostring(self.get_property_element(group_property),
+        return etree.tostring(self.get_user_element(user),
                               xml_declaration=declaration,
                               encoding='UTF-8',
                               pretty_print=True)
 
-    def get_property_element(self, group_property):
-        property_element = etree.Element('property')
-        property_element.set('key', group_property.key)
-        property_element.text = group_property.value
-        if group_property.read_only:
-            property_element.set('readOnly', "true")
-        if isinstance(group_property.value, (str, unicode)):
-            property_element.set('type', GroupProperty.STRING_TYPE)
-        elif isinstance(group_property.value, int):
-            property_element.set('type', GroupProperty.INTEGER_TYPE)
-        else:
-            raise ValueError('Unsupported value type {}'.format(type(group_property.value)))
+    def get_user_element(self, user):
+        user_element = etree.Element('user')
+        userid_element = etree.SubElement(user_element, 'userID')
+        identity_element = etree.SubElement(userid_element, 'identity')
+        identity_element.set('type', user.user_id.type)
+        identity_element.text = user.user_id.name
+        if user.identities:
+            identities_element = etree.SubElement(user_element, 'identities')
+            for identity in user.identities:
+                identity_element = etree.SubElement(identities_element, 'identity')
+                identity_element.set('type', identity.type)
+                identity_element.text = identity.name
 
-        return property_element
+        return user_element
