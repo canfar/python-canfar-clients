@@ -78,8 +78,8 @@ class DataClient(BaseClient):
         for protocol in tran.protocols:
             url = protocol.endpoint
             if url is None:
-                self.logger.info(
-                    'No endpoint for URI. Missing file or lacking permission?')
+                self.logger.debug(
+                    'No endpoint for URI, skipping.')
                 continue
 
             self.logger.debug('Transfering %s %s...' % (dir_str, url) )
@@ -102,14 +102,18 @@ class DataClient(BaseClient):
             except Exception as e:
                 # Reset to start of file. Try next endpoint
                 f.seek(0)
-                self.logger.debug('Transfer %s %s %s failed:\n%s' %
-                                  (str(localfile), str(dir_str), str(uri),
-                                   str(e)) )
+                self.logger.warning('Transfer %s %s %s failed:\n%s' %
+                                    (str(localfile), str(dir_str), str(uri),
+                                     str(e)) )
                 continue
         f.close()
 
         if not success:
-            raise TransferException('Failed to transfer %s %s %s' %                                   (str(localfile), str(dir_str), str(uri)))
+            msg = 'Failed to transfer %s %s %s. ' % (str(localfile),
+                                                     str(dir_str), str(uri))
+            msg = msg + 'File missing or user lacks permission?'
+            self.logger.error(msg)
+            raise TransferException(msg)
 
         # Do a HEAD to compare md5sums?
 

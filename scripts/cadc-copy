@@ -64,7 +64,11 @@ if __name__=='__main__':
                       str(c.basic_auth is not None)) )
 
     # hack for VOSpace testing
-    c.base_url = '%s://%s/vospace/synctrans' % (c.protocol,c.host)
+    if c.basic_auth:
+        auth_url='auth/'
+    else:
+        auth_url=''
+    c.base_url = '%s://%s/vospace/%ssynctrans' % (c.protocol,c.host,auth_url)
     uri = 'vos:/echapin/%s' % filename
 
     # Copy file

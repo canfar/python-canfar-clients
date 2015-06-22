@@ -158,9 +158,10 @@ class BaseClient(object):
 
         # Base URL for web services.
         # Clients will probably append a specific service
-        if self.is_authorized:
+        if self.certificate_file_location:
             self.protocol = 'https'
         else:
+            # For both anonymous and name/password authentication
             self.protocol = 'http'
 
         self.base_url = '%s://%s' % (self.protocol, self.host)
@@ -271,7 +272,7 @@ class BaseClient(object):
         self.logger = logging.getLogger('cadcclient')
 
     def get_logger(self, verbose=True, debug=False, quiet=False):
-        """ Set up and return logger """
+        """ Set up and return logger. Default to ERROR level. """
 
         log_format = "%(module)s: %(levelname)s: %(message)s"
 
