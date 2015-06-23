@@ -1,25 +1,25 @@
 #!/usr/bin/env python2.7
 
-""" Defines GMSClientIntTest class """
+""" Defines GroupsClientIntTest class """
 
 import os
 import sys
 import uuid
 import unittest
-from gmsclient.client import Client
-from gmsclient.group import Group
-from gmsclient.identity import Identity
-from gmsclient.user import User
+from canfar.groups.client import GroupsClient
+from canfar.groups.group import Group
+from canfar.groups.identity import Identity
+from canfar.groups.user import User
 
-# put build at the start of the search path
-sys.path.insert(0, os.path.abspath('../../lib.local/lib'))
+# put local code at top of the search path
+sys.path.insert(0, os.path.abspath('../'))
 
 
-class GMSClientIntTest(unittest.TestCase):
+class GroupsClientIntTest(unittest.TestCase):
     """
     sample usage:
 
-    gmsclient_int_test.py foo.cadc.dao.nrc.ca /usr/cadc/dev/admin/test-certificates/x509_CADCAuthtest1.pem
+    groups_client_int_test.py foo.cadc.dao.nrc.ca /usr/cadc/dev/admin/test-certificates/x509_CADCAuthtest1.pem
 
     """
     def init(self):
@@ -33,10 +33,10 @@ class GMSClientIntTest(unittest.TestCase):
     def get_group_id(self, name):
         return 'ALLOW-TEST-ac_ws-inttest-{}-{}'.format(name, uuid.uuid4())
 
-    def test_gms_client(self):
+    def test_groups_client(self):
         self.init()
 
-        client = Client(self.cert_file)
+        client = GroupsClient(self.cert_file)
 
         # create the owner
         owner = User(Identity(client.current_user_dn, 'X500'))
@@ -108,5 +108,5 @@ class GMSClientIntTest(unittest.TestCase):
         self.assertEqual(next(iter(actual.user_admins)).user_id, next(iter(expected.user_admins)).user_id,
                          'user admins do not match')
 
-suite = unittest.TestLoader().loadTestsFromTestCase(GMSClientIntTest)
+suite = unittest.TestLoader().loadTestsFromTestCase(GroupsClientIntTest)
 unittest.TextTestRunner(verbosity=2).run(suite)

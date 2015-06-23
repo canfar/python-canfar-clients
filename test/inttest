@@ -1,9 +1,9 @@
 #!/bin/bash
-# Integration test for Python GMS client
+# Integration test for Python groups client
 
-where=`which gmsIsMember`
+where=`which canfar-is-member`
 if [[ "$?" != "0" ]]; then
-    echo "ERROR: Couldn't locate gmsIsMember"
+    echo "ERROR: Couldn't locate canfar-is-member"
     exit 1
 else
     echo "*** Testing $where ***"
@@ -25,7 +25,7 @@ fi
 # to work. If the python client is extended in the future so that
 # groups and membership can be written, these can be generated
 # on-the-fly.
-MEMBERCMD="gmsIsMember --certfile=$CADCTESTCERTS/$testcert"
+MEMBERCMD="canfar-is-member --certfile=$CADCTESTCERTS/$testcert"
 TESTGRP1=PythonIntTest-Group1
 TESTGRP2=PythonIntTest-Group2
 
