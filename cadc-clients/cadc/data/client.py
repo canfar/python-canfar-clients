@@ -29,8 +29,25 @@ class DataClient(BaseClient):
         """ Logger for data client """
         self.logger = logging.getLogger('dataclient')
 
-    def transfer_file(self, uri, localfile, is_put=False, stream=None):
+    def transfer_file(self, localfile, uri=None, filename=None, is_put=False,
+                      archive=None, stream=None):
         """ Copy file to/from data/vos web service """
+
+        if uri is not None:
+            # User provides the uri
+            uri_transfer = uri
+        else:
+            if archive is not None:
+                # archive can form a data web service uri
+                uri_transfer = 'ad:%s/' % archive
+                if filename is None:
+                    # derive filename in archive from localfile
+                    uri_transfer = uri_transfer + (localfile.split('/'))[-1]
+                else:
+                    # archive filename provided
+                    uri_transfer = uri_transfer + filename
+            else:
+                raise ValueError('Must specify either uri or archive')
 
         # Direction-dependent setup
         if is_put:
@@ -41,11 +58,11 @@ class DataClient(BaseClient):
                 raise UnauthorizedException(
                     "Unauthorized clients cannot put files.")
             dir_str = 'to'
-            tran = Transfer( uri, 'pushToVoSpace' )
+            tran = Transfer( uri_transfer, 'pushToVoSpace' )
             f = open(localfile, 'rb')
         else:
             dir_str = 'from'
-            tran = Transfer( uri, 'pullFromVoSpace' )
+            tran = Transfer( uri_transfer, 'pullFromVoSpace' )
             f = open(localfile, 'wb')
 
         # If a stream is supplied it goes in an Http header
@@ -55,7 +72,7 @@ class DataClient(BaseClient):
             headers = None
 
         self.logger.debug("Using service %s to transfer %s %s %s (%s)" %
-                          (self.base_url, localfile, dir_str, uri,
+                          (self.base_url, localfile, dir_str, uri_transfer,
                            str(stream)) )
 
         # obtain list of endpoints by sending a transfer document and
@@ -81,7 +98,7 @@ class DataClient(BaseClient):
                     'No endpoint for URI, skipping.')
                 continue
 
-            self.logger.debug('Transfering %s %s...' % (dir_str, url) )
+            self.logger.debug('Transferring %s %s...' % (dir_str, url) )
 
             try:
                 if is_put:
@@ -102,14 +119,15 @@ class DataClient(BaseClient):
                 # Reset to start of file. Try next endpoint
                 f.seek(0)
                 self.logger.warning('Transfer %s %s %s failed:\n%s' %
-                                    (str(localfile), str(dir_str), str(uri),
-                                     str(e)) )
+                                    (str(localfile), str(dir_str),
+                                     str(uri_transfer), str(e)) )
                 continue
         f.close()
 
         if not success:
             msg = 'Failed to transfer %s %s %s. ' % (str(localfile),
-                                                     str(dir_str), str(uri))
+                                                     str(dir_str),
+                                                     str(uri_transfer))
             msg = msg + 'File missing or user lacks permission?'
             self.logger.error(msg)
             raise TransferException(msg)

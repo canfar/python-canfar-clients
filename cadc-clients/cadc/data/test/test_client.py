@@ -73,6 +73,7 @@ import unittest
 import requests
 import os
 import sys
+import copy
 import __builtin__
 
 # put local code at top of the search path
@@ -87,7 +88,8 @@ from cadc.common.exceptions import UnauthorizedException
 test_archive = 'TEST'
 test_localfile = 'foo.fits'
 test_localfile2 = '/somewhere/newfile'
-test_uri = 'ad:TEST/foo.fits'
+test_uri = 'ad:%s/%s' % (test_archive,test_localfile)
+test_stream = 'default'
 
 test_cert = 'cadcproxy.pem'
 test_host = 'some.host'
@@ -132,8 +134,6 @@ test_get_transfer_resp_xml = ClientForTest.read_data(
 test_put_transfer_xml = ClientForTest.read_data('put_transfer.xml')
 test_put_transfer_resp_xml = ClientForTest.read_data(
     'put_transfer_response.xml')
-
-test_headers = {'content-type': 'text/xml'}
 
 
 class TestClient(unittest.TestCase):
@@ -249,19 +249,60 @@ class TestClient(unittest.TestCase):
         mock_response_fail.raise_for_status = Mock(
             side_effect=Exception('Failed.') )
 
+        # make sure that transfer_file raises en error on bad inputs
+        with self.assertRaises(ValueError):
+            c.transfer_file(test_localfile)
+
         # We mock the client session POST response to return desired
         # XML with a list of endpoints. We then check that the post
         # was called with the correct values.
-        # The "mock_requests_putt" is called to actually put the data,
-        # and we ensure it is called with the correct endpoint
+        # The "mock_requests_put" is called to actually put the data,
+        # and we ensure it is called with the correct endpoint.
+        #
+        # We do the whole thing three times: first time specifying a uri,
+        # second time specifying archive (filename for URI derived from
+        # local filename), and finally specifying both archive and filename.
+        for i in range(3):
+            mock_session_post.return_value = mock_response
+            mock_requests_put.return_value = mock_response
+
+            if i is 0:
+                c.transfer_file(test_localfile, uri=test_uri, is_put=True)
+            elif i is 1:
+                c.transfer_file(test_localfile, archive=test_archive,
+                                is_put=True)
+            else:
+                c.transfer_file(test_localfile, archive=test_archive,
+                                filename=test_localfile, is_put=True)
+
+            mock_session_post.assert_called_once_with(c.base_url,
+                                                      data=test_put_transfer_xml,
+                                                      json=None, verify=False,
+                                                      headers=test_headers)
+
+            mock_requests_put.assert_called_once_with(test_endpoint1,
+                                                      data=mock_file)
+
+            mock_open.reset_mock()
+            mock_requests_put.reset_mock()
+            mock_session_post.reset_mock()
+            mock_isfile.reset_mock()
+
+        # Test specifying the stream
         mock_session_post.return_value = mock_response
         mock_requests_put.return_value = mock_response
-        c.transfer_file(test_uri, test_localfile, is_put=True)
+
+        c.transfer_file(test_localfile, archive=test_archive,
+                        filename=test_localfile, is_put=True,
+                        stream=test_stream)
+
+        expected_headers = copy.deepcopy(test_headers)
+        expected_headers['X-CADC-Stream'] = test_stream
 
         mock_session_post.assert_called_once_with(c.base_url,
                                                   data=test_put_transfer_xml,
                                                   json=None, verify=False,
-                                                  headers=test_headers)
+                                                  headers=expected_headers)
 
         mock_requests_put.assert_called_once_with(test_endpoint1,
                                                   data=mock_file)
@@ -275,7 +316,7 @@ class TestClient(unittest.TestCase):
         # PUT (endpoint2) will work
         mock_requests_put.side_effect = [mock_response_fail, mock_response]
 
-        c.transfer_file(test_uri, test_localfile, is_put=True)
+        c.transfer_file(test_localfile, uri=test_uri, is_put=True)
 
         mock_session_post.assert_called_once_with(c.base_url,
                                                   data=test_put_transfer_xml,
@@ -296,7 +337,7 @@ class TestClient(unittest.TestCase):
                                           mock_response_fail]
 
         with self.assertRaises(TransferException):
-            c.transfer_file(test_uri, test_localfile, is_put=True)
+            c.transfer_file(test_localfile, uri=test_uri, is_put=True)
 
 
         mock_session_post.assert_called_once_with(c.base_url,
@@ -317,7 +358,7 @@ class TestClient(unittest.TestCase):
         c.is_authorized = False
 
         with self.assertRaises(UnauthorizedException):
-            c.transfer_file(test_uri, test_localfile, is_put=True)
+            c.transfer_file(test_localfile, uri=test_uri, is_put=True)
 
 
     @patch('os.path.isfile')           # fake loading cert
@@ -363,7 +404,7 @@ class TestClient(unittest.TestCase):
         # to simulate streaming.
         mock_session_post.return_value = mock_response
         mock_requests_get.return_value = mock_response_get
-        c.transfer_file(test_uri, test_localfile)
+        c.transfer_file(test_localfile, uri=test_uri)
 
         mock_session_post.assert_called_once_with(c.base_url,
                                                   data=test_get_transfer_xml,
@@ -382,7 +423,7 @@ class TestClient(unittest.TestCase):
         mock_requests_get.side_effect = [mock_response_get_fail,
                                          mock_response_get]
 
-        c.transfer_file(test_uri, test_localfile)
+        c.transfer_file(test_localfile, uri=test_uri)
 
         mock_session_post.assert_called_once_with(c.base_url,
                                                   data=test_get_transfer_xml,
@@ -403,7 +444,7 @@ class TestClient(unittest.TestCase):
                                          mock_response_get_fail]
 
         with self.assertRaises(TransferException):
-            c.transfer_file(test_uri, test_localfile)
+            c.transfer_file(test_localfile, uri=test_uri)
 
         mock_session_post.assert_called_once_with(c.base_url,
                                                   data=test_get_transfer_xml,

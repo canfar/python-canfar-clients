@@ -79,6 +79,7 @@ from requests.auth import HTTPBasicAuth
 from cadc.common import exceptions
 import os.path
 import netrc
+import copy
 
 # disable the unverified HTTPS call warnings
 requests.packages.urllib3.disable_warnings()
@@ -141,7 +142,7 @@ class BaseClient(object):
                     print "Unable to open supplied certfile '%s':" % certfile +\
                         " Ignoring."
 
-            if not self.is_authorized:
+            if not self.is_authorized and usenetrc:
                 try:
                     auth = netrc.netrc().authenticators(self.host)
                     username=auth[0]
@@ -223,7 +224,7 @@ class BaseClient(object):
         self.logger.debug('%s to (%s):\n%s' % (method, url, xml_string) )
 
         if headers is not None:
-            local_headers = headers.copy()
+            local_headers = copy.deepcopy(headers)
         else:
             local_headers = dict()
 
