@@ -1,0 +1,4 @@
+mock
+lxml
+requests
+urllib3

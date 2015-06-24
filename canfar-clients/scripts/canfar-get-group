@@ -5,6 +5,7 @@ from canfar.groups import exceptions
 from canfar.groups.client import GroupsClient
 from canfar.groups.group_xml.group_reader import GroupReader
 from canfar.groups.group_xml.group_writer import GroupWriter
+from canfar.__version__ import version
 from cadc.common.parser import BaseParser
 import sys
 
@@ -13,7 +14,7 @@ description = "Get information about a group"
 if __name__=='__main__':
 
     # Parse the command line
-    parser = BaseParser(description=description)
+    parser = BaseParser(description=description,version=version)
     parser.add_argument('groupname', type=str, help="Group name to get")
 
     args=parser.parse_args()

@@ -223,9 +223,9 @@ class TestClient(unittest.TestCase):
 
     @patch('os.path.isfile')           # fake loading cert
     @patch('requests.Session.post')    # fake posting transfer doc
-    @patch('requests.post')            # fake putting the file
+    @patch('requests.put')             # fake putting the file
     @patch('__builtin__.open')         # fake source file for put
-    def test_put_file(self,mock_open,mock_requests_post,mock_session_post,
+    def test_put_file(self,mock_open,mock_requests_put,mock_session_post,
                       mock_isfile):
 
         mock_file = MagicMock(spec=file)
@@ -252,10 +252,10 @@ class TestClient(unittest.TestCase):
         # We mock the client session POST response to return desired
         # XML with a list of endpoints. We then check that the post
         # was called with the correct values.
-        # The second "mock_requests_post" is called to actually put
-        # the data, and we ensure it is called with the correct endpoint
+        # The "mock_requests_putt" is called to actually put the data,
+        # and we ensure it is called with the correct endpoint
         mock_session_post.return_value = mock_response
-        mock_requests_post.return_value = mock_response
+        mock_requests_put.return_value = mock_response
         c.transfer_file(test_uri, test_localfile, is_put=True)
 
         mock_session_post.assert_called_once_with(c.base_url,
@@ -263,18 +263,17 @@ class TestClient(unittest.TestCase):
                                                   json=None, verify=False,
                                                   headers=test_headers)
 
-        mock_requests_post.assert_called_once_with(test_endpoint1,
-                                                   data=mock_file)
+        mock_requests_put.assert_called_once_with(test_endpoint1,
+                                                  data=mock_file)
 
         mock_open.reset_mock()
-        mock_requests_post.reset_mock()
+        mock_requests_put.reset_mock()
         mock_session_post.reset_mock()
         mock_isfile.reset_mock()
 
-        # First POST (endpoint1) returns a failed response. The second
-        # POST (endpoint2) will work
-        mock_requests_post.side_effect = [mock_response_fail,
-                                          mock_response]
+        # First PUT (endpoint1) returns a failed response. The second
+        # PUT (endpoint2) will work
+        mock_requests_put.side_effect = [mock_response_fail, mock_response]
 
         c.transfer_file(test_uri, test_localfile, is_put=True)
 
@@ -283,17 +282,17 @@ class TestClient(unittest.TestCase):
                                                   json=None, verify=False,
                                                   headers=test_headers)
 
-        mock_requests_post.assert_has_calls(
+        mock_requests_put.assert_has_calls(
             [ call(test_endpoint1, data=mock_file),
               call(test_endpoint2, data=mock_file) ] )
 
         mock_open.reset_mock()
-        mock_requests_post.reset_mock()
+        mock_requests_put.reset_mock()
         mock_session_post.reset_mock()
         mock_isfile.reset_mock()
 
         # Both endpoints, and therefore the transfer, fail
-        mock_requests_post.side_effect = [mock_response_fail,
+        mock_requests_put.side_effect = [mock_response_fail,
                                           mock_response_fail]
 
         with self.assertRaises(TransferException):
@@ -305,12 +304,12 @@ class TestClient(unittest.TestCase):
                                                   json=None, verify=False,
                                                   headers=test_headers )
 
-        mock_requests_post.assert_has_calls(
+        mock_requests_put.assert_has_calls(
             [ call(test_endpoint1, data=mock_file),
               call(test_endpoint2, data=mock_file) ] )
 
         mock_open.reset_mock()
-        mock_requests_post.reset_mock()
+        mock_requests_put.reset_mock()
         mock_session_post.reset_mock()
         mock_isfile.reset_mock()
 

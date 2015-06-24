@@ -1,12 +1,11 @@
 import netrc
 import os
 from argparse import ArgumentParser
-import __version__
 
 class BaseParser(ArgumentParser):
     """An ArgumentParser with some common things most CADC clients will want"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, version=None, *args, **kwargs):
 
         ArgumentParser.__init__(self, *args, **kwargs)
 
@@ -19,11 +18,16 @@ class BaseParser(ArgumentParser):
         self.add_argument('--anonymous', action="store_true", default=False,
                           help='Force anonymous connection, ' +
                           'ignoring certfile and .netrc entries')
-        self.add_argument('--version', action='version',
-                          version=__version__.version)
+        self.add_argument('--host', help="Base host for services"
+                          + "(default=www.canfar.phys.uvic.ca")
         self.add_argument('--verbose', action="store_true", default=False,
                           help='verbose messages')
         self.add_argument('--debug', action="store_true", default=False,
                           help='debug messages')
         self.add_argument('--quiet', action="store_true", default=False,
                           help='run quietly')
+
+        if version is not None:
+            self.add_argument('--version', action='version',
+                              version=version)
+

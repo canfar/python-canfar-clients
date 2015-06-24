@@ -9,14 +9,14 @@ from canfar.groups.exceptions import GroupExistsException, UserNotFoundException
 from canfar.groups.group import Group
 from canfar.groups.identity import Identity
 from canfar.groups.user import User
-
+from canfar.__version__ import version
 
 description = "Create a group"
 
 if __name__ == '__main__':
 
     # Parse the command line
-    parser = BaseParser(description=description)
+    parser = BaseParser(description=description,version=version)
     parser.add_argument('groupname', type=str, help="Group name to create.")
     parser.add_argument('--pi_username', type=str,
                         help="PI username to create.")

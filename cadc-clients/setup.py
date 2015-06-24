@@ -40,7 +40,7 @@
 # -*/
 
 # Use "distribute"
-from cadc.common.__version__ import version
+from cadc.__version__ import version
 import os
 from setuptools import setup, find_packages
 import sys
@@ -61,13 +61,13 @@ for script in os.listdir(script_dir):
 setup(name='cadc',
       version=version,
       description='CADC Python Clients',
-      url='This is a Home-page.',
+      url='http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca',
       author='Canadian Astronomy Data Centre',
       author_email='cadc@nrc.ca',
       license='GPLv3',
-      long_description='Python client libraries and scripts for CADC and CANFAR services',
+      long_description='Python client libraries and scripts for CADC web services',
       packages=find_packages(),
       scripts=scripts,
-      provides=['cadc','canfar'],
+      provides=['cadc'],
       zip_safe=False,
       requires=['pyOpenSSL', 'lxml', 'requests'])

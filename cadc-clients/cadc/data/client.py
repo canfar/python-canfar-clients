@@ -21,10 +21,9 @@ class DataClient(BaseClient):
 
         # Specific base_url for data webservice
         self.base_url = self.base_url + '/data'
-        if self.is_authorized:
+        if self.basic_auth is not None:
             self.base_url = self.base_url + '/auth'
-        else:
-            self.base_url = self.base_url + '/pub'
+        self.base_url = self.base_url + '/transfer'
 
     def _make_logger(self):
         """ Logger for data client """
@@ -86,7 +85,7 @@ class DataClient(BaseClient):
 
             try:
                 if is_put:
-                    r = requests.post(url, data=f)
+                    r = requests.put(url, data=f)
                     self.check_exception(r)
                 else:
                     r = requests.get(url, stream=True)
