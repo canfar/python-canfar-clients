@@ -111,13 +111,14 @@ class SSLAdapter(HTTPAdapter):
 class BaseClient(object):
     """Base class for interacting with CADC services"""
 
-    def __init__(self, certfile=None, anonymous=False,
+    def __init__(self, certfile=None, anonymous=False, usenetrc=True,
                  host='www.canfar.phys.uvic.ca'):
         """
         Client constructor
 
         certfile  -- Path to CADC proxy certificate
         anonymous -- Force anonymous client, regardless of cert/.netrc
+        usenetrc  -- Try to use name/password authentication?
         host      -- Override default service host
         """
 

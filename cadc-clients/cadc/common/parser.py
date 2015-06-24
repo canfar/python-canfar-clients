@@ -5,20 +5,20 @@ from argparse import ArgumentParser
 class BaseParser(ArgumentParser):
     """An ArgumentParser with some common things most CADC clients will want"""
 
-    def __init__(self, version=None, *args, **kwargs):
+    def __init__(self, version=None, usecert=True, *args, **kwargs):
 
         ArgumentParser.__init__(self, *args, **kwargs)
 
-        self.add_argument('--certfile', type=str,
-                          help="location of your CADC security certificate file"
-                          + " (default=$HOME/.ssl/cadcproxy.pem, " + \
+        if usecert:
+            self.add_argument('--certfile', type=str,
+                              help="location of your CADC security certificate "
+                              + "file (default=$HOME/.ssl/cadcproxy.pem, " + \
                               "otherwise uses $HOME/.netrc for name/password)",
                           default=os.path.join(os.getenv("HOME", "."),
                                                  ".ssl/cadcproxy.pem"))
         self.add_argument('--anonymous', action="store_true", default=False,
-                          help='Force anonymous connection, ' +
-                          'ignoring certfile and .netrc entries')
-        self.add_argument('--host', help="Base host for services"
+                          help='Force anonymous connection')
+        self.add_argument('--host', help="Base hostname for services"
                           + "(default=www.canfar.phys.uvic.ca")
         self.add_argument('--verbose', action="store_true", default=False,
                           help='verbose messages')

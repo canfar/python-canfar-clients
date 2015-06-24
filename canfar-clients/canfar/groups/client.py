@@ -88,7 +88,8 @@ class GroupsClient(BaseClient):
         certfile -- Path to CADC proxy certificate
         """
 
-        super(GroupsClient, self).__init__(certfile=certfile)
+        # This client does not support name/password authentication
+        super(GroupsClient, self).__init__(certfile=certfile,usenetrc=False)
 
         # Specific base_url for AC webservice
         host = os.getenv('AC_WEBSERVICE_HOST', self.host)
