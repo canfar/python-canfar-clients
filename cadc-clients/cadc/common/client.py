@@ -296,7 +296,7 @@ class BaseClient(object):
         Raise an exception, if any, that represents the status of the
         response.
 
-        Specific exceptions may be handled by adding to the
+        Specific exceptions may be thrown by adding to the
         self._HTTP_STATUS_CODE_EXCEPTIONS dictionary.
 
         Otherwise falls back to response.raise_for_status() for standard
@@ -308,7 +308,8 @@ class BaseClient(object):
         status_code = response.status_code
         status_text = response.text
 
-        self.logger.debug("Checking for code %d" % status_code)
+        self.logger.debug("Response code: %d" % status_code)
+        self.logger.debug("Response text: %s" % status_text)
 
         try:
             http_exception_obj = self._HTTP_STATUS_CODE_EXCEPTIONS[status_code]

@@ -98,7 +98,7 @@ class DataClient(BaseClient):
                     'No endpoint for URI, skipping.')
                 continue
 
-            self.logger.debug('Transferring %s %s...' % (dir_str, url) )
+            self.logger.info('Transferring %s %s...' % (dir_str, url) )
 
             try:
                 if is_put:
