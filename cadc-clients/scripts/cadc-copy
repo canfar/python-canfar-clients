@@ -102,7 +102,7 @@ if __name__=='__main__':
     parser.add_argument('file', help='File(s) on local disk')
     parser.add_argument('--stream', default=None, help='Stream name')
     parser.add_argument('--filename', default=None,
-                        help='Filename(s) in archive')
+                        help='Filename(s) in archive (defaults to file)')
     parser.add_argument('--ignorefailures', action='store_true',
                         default=False,
                         help='continue even if individual file transfers fail')
