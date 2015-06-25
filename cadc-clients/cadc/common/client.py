@@ -311,7 +311,8 @@ class BaseClient(object):
         status_text = response.text
 
         self.logger.debug("Response code: %d" % status_code)
-        self.logger.debug("Response text: %s" % status_text)
+        if status_code != 200:
+            self.logger.debug("Response text: %s" % status_text)
 
         try:
             http_exception_obj = self._HTTP_STATUS_CODE_EXCEPTIONS[status_code]
