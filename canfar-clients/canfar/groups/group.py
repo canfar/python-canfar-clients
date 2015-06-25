@@ -63,8 +63,6 @@
 #  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 #                                       <http://www.gnu.org/licenses/>.
 #
-#  $Revision: 4 $
-#
 # ***********************************************************************
 
 import re

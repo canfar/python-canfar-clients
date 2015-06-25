@@ -62,8 +62,6 @@
 # *  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 # *                                       <http://www.gnu.org/licenses/>.
 # *
-# *  $Revision: 4 $
-# *
 # ************************************************************************
 
 # Python client base class for interacting with CANFAR and CADC
@@ -186,12 +184,7 @@ class BaseClient(object):
 
 
     def get_current_user_dn(self):
-        """
-            Obtain the current user's DN from this client's certificate.  This
-            will return a distinguished name, as it was read from the
-            certificate.
-            jenkinsd 2015.02.06
-        """
+        """ Obtain user distinguished name from client's certificate """
 
         if self.certificate_file_location is not None:
             raise ValueError(
@@ -219,7 +212,13 @@ class BaseClient(object):
             raise
 
     def _upload_xml(self, url, xml_string, method, headers=None):
-        """ PUT or POST XML string to URL, return the response object"""
+        """ PUT or POST XML string to URL, return the response object
+
+        url        -- where to send the string
+        xml_string -- string containing xml
+        method     -- PUT or POST
+        headers    -- optional dictionary of HTTP headers
+        """
 
         self.logger.debug('%s to (%s):\n%s' % (method, url, xml_string) )
 
@@ -233,9 +232,12 @@ class BaseClient(object):
         if method == 'PUT':
             response = self.session.put(url, data=xml_string, verify=False,
                                         headers=local_headers)
-        else:
+        elif method == 'POST':
             response = self.session.post(url, data=xml_string, json=None,
                                          verify=False, headers=local_headers)
+        else:
+            raise ValueError('Method must be PUT or POST')
+
         self.check_exception(response)
 
         return response

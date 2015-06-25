@@ -62,8 +62,6 @@
 # *  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 # *                                       <http://www.gnu.org/licenses/>.
 # *
-# *  $Revision: 4 $
-# *
 # ************************************************************************
 
 # Python implementation of the GMS client. Only supports x509 as the
@@ -109,9 +107,7 @@ class GroupsClient(BaseClient):
             exceptions.GroupExistsException()
 
     def create_group(self, group):
-        """
-            Persist the given Group
-        """
+        """ Persist the given Group """
         if group is None:
             raise ValueError("Group cannot be None.")
 

@@ -62,8 +62,6 @@
 #  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 #                                       <http://www.gnu.org/licenses/>.
 #
-#  $Revision: 4 $
-#
 # ***********************************************************************
 
 from lxml import etree
@@ -71,9 +69,7 @@ from canfar.groups.group_property import GroupProperty
 
 
 class GroupPropertyWriter(object):
-    """
-    Utility class to write a property to a corresponding element
-    """
+    """ Utility class to write a property to a corresponding element """
 
     def write(self, group_property, declaration=False):
 

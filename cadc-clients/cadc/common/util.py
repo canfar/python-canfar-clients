@@ -63,7 +63,6 @@
 #  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 #                                       <http://www.gnu.org/licenses/>.
 #
-#  $Revision: 4 $
 #
 # ***********************************************************************
 
@@ -74,8 +73,7 @@ IVOA_DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 
 
 def date2ivoa(d):
-    """
-    Takes a datetime and returns a string formatted
+    """ Takes a datetime and returns a string formatted
     to the IVOA date format yyyy-MM-dd'T'HH:mm:ss.SSS
     """
 

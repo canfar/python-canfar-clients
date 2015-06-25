@@ -62,8 +62,6 @@
 # *  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 # *                                       <http://www.gnu.org/licenses/>.
 # *
-# *  $Revision: 4 $
-# *
 # ************************************************************************
 __author__ = 'jenkinsd'
 
@@ -72,7 +70,7 @@ class GroupNotFoundException(Exception):
     """Raised when a group is sought, but not found.
 
     Attributes:
-        msg  -- explanation of why the specific transition is not allowed
+    msg  -- explanation of why the specific transition is not allowed
     """
 
     def __init__(self, msg=None):
@@ -84,7 +82,7 @@ class GroupExistsException(Exception):
     Group.
 
     Attributes:
-        msg  -- explanation of why the specific transition is not allowed
+    msg  -- explanation of why the specific transition is not allowed
     """
 
     def __init__(self, msg=None):

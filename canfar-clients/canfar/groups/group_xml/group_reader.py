@@ -63,8 +63,6 @@
 #  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 #                                       <http://www.gnu.org/licenses/>.
 #
-#  $Revision: 4 $
-#
 # ***********************************************************************
 
 import string
@@ -85,8 +83,8 @@ class GroupReader(object):
         """Build an Group object from an XML document string.
 
         Arguments:
-        xml_string : string of XML containing the Group element
-        return : a Group object
+        xml_string -- string of XML containing the Group element
+        return     -- a Group object
         """
         root = etree.fromstring(xml_string, etree.XMLParser())
         return self.get_group(root, deep_copy)
