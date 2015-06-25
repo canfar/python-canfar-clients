@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 
 """ Defines GroupsClientIntTest class """
 
@@ -6,13 +6,13 @@ import os
 import sys
 import uuid
 import unittest
+
+# put local code at top of the search path
+sys.path.insert(0, os.path.abspath('../'))
 from canfar.groups.client import GroupsClient
 from canfar.groups.group import Group
 from canfar.groups.identity import Identity
 from canfar.groups.user import User
-
-# put local code at top of the search path
-sys.path.insert(0, os.path.abspath('../'))
 
 
 class GroupsClientIntTest(unittest.TestCase):
