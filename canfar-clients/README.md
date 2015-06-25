@@ -1,5 +1,5 @@
 # CANFAR
-This Python package provides client libraries and command-line utilities for interacting with [CANFAR](http://canfar.phys.uvic.ca/) web services.
+This Python package provides client libraries and command-line utilities for interacting with [CANFAR](http://www.canfar.phys.uvic.ca/) web services.
 
 ## Installation
 The `requirements.txt` file can be used to install all necessary dependencies globally:

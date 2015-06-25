@@ -1,5 +1,5 @@
 # python-canfar-clients
-This repository contains Python client libraries and command-line utilities for interacting with [CANFAR](http://canfar.phys.uvic.ca/) and [CADC](http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/) web services, under `canfar-clients/` and `cadc-clients/`, respectively.
+This repository contains Python client libraries and command-line utilities for interacting with [CANFAR](http://www.canfar.phys.uvic.ca/) and [CADC](http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/) web services, under `canfar-clients/` and `cadc-clients/`, respectively.
 
 ## Shared virtual environment
 If you are working on `cadc-clients` you will also want to have `canfar-clients` installed, as it is a dependency. In this event a shared virtual environment (**venv**) will be useful.
