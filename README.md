@@ -16,17 +16,20 @@ $ source venv/bin/activate
 
 ```
 
-Next, install the missing external dependencies from *both* packages:
+Then, install the missing external dependencies for `canfar-clients`, and build
+build and install it to the **venv**:
 ```
 $ pip install -r canfar-clients/requirements.txt
+$ cd canfar-clients
+$ python setup.py instal
+$ cd ..
+```
+
+Finally, install any remaining external dependencies for `cadc-clients` and
+develop/install it in the **venv** as well:
+```
 $ pip install -r cadc-clients/requirements.txt
-
-```
-
-Finally, install `cadc-clients` in the **venv** first:
-```
 $ cd cadc-clients
 $ python setup.py install
-$ cd ../canfar-clients
 ```
 
