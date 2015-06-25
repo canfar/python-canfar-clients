@@ -64,12 +64,12 @@
 # *
 # ************************************************************************
 
-from cadc.common.client import BaseClient
+from canfar.common.client import BaseClient
 from cadc.data.transfer_reader import TransferReader
 from cadc.data.transfer_writer import TransferWriter
 from cadc.data.transfer import Transfer
 from cadc.data.exceptions import TransferException
-from cadc.common.exceptions import UnauthorizedException
+from canfar.common.exceptions import UnauthorizedException
 import urlparse
 import logging
 import requests

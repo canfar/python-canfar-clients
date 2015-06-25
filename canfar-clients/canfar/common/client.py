@@ -74,7 +74,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 from requests.auth import HTTPBasicAuth
-from cadc.common import exceptions
+from canfar.common import exceptions
 import os.path
 import netrc
 import copy

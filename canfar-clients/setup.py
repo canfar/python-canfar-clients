@@ -70,4 +70,4 @@ setup(name='canfar',
       scripts=scripts,
       provides=['canfar'],
       zip_safe=False,
-      requires=['lxml', 'cadc'])
+      requires=['pyOpenSSL', 'lxml', 'requests'])

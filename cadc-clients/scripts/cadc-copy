@@ -69,7 +69,7 @@
 
 from cadc.__version__ import version
 from cadc.data.client import DataClient
-from cadc.common.parser import BaseParser
+from canfar.common.parser import BaseParser
 from argparse import RawDescriptionHelpFormatter
 import sys
 import logging

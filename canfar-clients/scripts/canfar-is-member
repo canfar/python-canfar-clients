@@ -1,4 +1,5 @@
 #!python
+# -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -70,7 +71,7 @@ of a list of groups"""
 from canfar.groups.client import GroupsClient
 from canfar.groups.role import Role
 from canfar.__version__ import version
-from cadc.common.parser import BaseParser
+from canfar.common.parser import BaseParser
 import sys
 
 description = "Determine whether a user (identified by CADC proxy cert) is a member of any of a set of groups"

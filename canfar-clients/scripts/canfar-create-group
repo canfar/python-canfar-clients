@@ -1,4 +1,5 @@
 #!python
+# -*- coding: utf-8 -*-
 # ***********************************************************************
 # ******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # *************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -68,7 +69,7 @@
 of a list of groups"""
 
 from canfar.groups.client import GroupsClient
-from cadc.common.parser import BaseParser
+from canfar.common.parser import BaseParser
 import sys
 from canfar.groups.exceptions import GroupExistsException, UserNotFoundException
 from canfar.groups.group import Group

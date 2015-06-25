@@ -70,4 +70,4 @@ setup(name='cadc',
       scripts=scripts,
       provides=['cadc'],
       zip_safe=False,
-      requires=['pyOpenSSL', 'lxml', 'requests'])
+      requires=['lxml', 'canfar'])

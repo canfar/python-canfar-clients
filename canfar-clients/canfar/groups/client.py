@@ -72,7 +72,7 @@ import os
 import exceptions
 from group_xml.group_reader import GroupReader
 from group_xml.group_writer import GroupWriter
-from cadc.common.client import BaseClient
+from canfar.common.client import BaseClient
 
 
 class GroupsClient(BaseClient):

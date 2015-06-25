@@ -71,7 +71,7 @@ from group_property_reader import GroupPropertyReader
 from canfar.groups.identity import Identity
 from canfar.groups.group import Group
 from canfar.groups.user import User
-from cadc.common.util import str2ivoa
+from canfar.common.util import str2ivoa
 
 GROUP_URI = 'ivo://cadc.nrc.ca/gms#'
 

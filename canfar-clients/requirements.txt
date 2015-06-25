@@ -1,4 +1,5 @@
 mock
 lxml
+pyOpenSSL
 requests
 urllib3

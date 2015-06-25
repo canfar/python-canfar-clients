@@ -69,7 +69,7 @@ from lxml import etree
 from canfar.groups.group import Group
 from group_property_writer import GroupPropertyWriter
 from user_writer import UserWriter
-from cadc.common.util import date2ivoa
+from canfar.common.util import date2ivoa
 
 GROUP_URI = 'ivo://cadc.nrc.ca/gms#'
 

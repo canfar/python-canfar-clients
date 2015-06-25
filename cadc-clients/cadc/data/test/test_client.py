@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ************************************************************************
 # *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
@@ -81,7 +81,7 @@ from cadc.data.client import DataClient
 from cadc.data.transfer_reader import TransferReader
 from cadc.data.transfer_writer import TransferWriter
 from cadc.data.exceptions import TransferException
-from cadc.common.exceptions import UnauthorizedException
+from canfar.common.exceptions import UnauthorizedException
 
 test_archive = 'TEST'
 test_localfile = 'foo.fits'
@@ -136,7 +136,6 @@ test_put_transfer_resp_xml = ClientForTest.read_data(
 
 class TestClient(unittest.TestCase):
 
-    # Most of these tests are actually for the BaseClient
     def test_constructor(self):
         # default client, patch netrc to ensure no netrc found
         with patch('netrc.netrc.authenticators') as mock_authenticator:
@@ -147,68 +146,6 @@ class TestClient(unittest.TestCase):
         self.assertFalse(c.is_authorized)
         self.assertEqual(c.protocol,'http')
 
-        # no certfile, but netrc works, so name+password auth
-        with patch('netrc.netrc.authenticators') as mock_authenticator:
-            mock_authenticator.return_value = ['janedoe','account','password']
-            c = DataClient()
-        self.assertIsNone(c.certificate_file_location)
-        self.assertIsNotNone(c.basic_auth)
-        self.assertTrue(c.is_authorized)
-        self.assertEqual(c.protocol,'http')
-
-        # certfile authorization, no netrc. Patch open as well so that
-        # it appears to be successful
-        with patch('netrc.netrc.authenticators') as mock_authenticator:
-            mock_authenticator.side_effect = Exception('No netrc')
-            with patch('os.path.isfile') as mock_isfile:
-                c = DataClient(certfile=test_cert)
-        self.assertEqual(c.certificate_file_location,test_cert)
-        self.assertIsNone(c.basic_auth)
-        self.assertTrue(c.is_authorized)
-        self.assertEqual(c.protocol,'https')
-
-        # bad certfile provided, no netrc, results in anonymous client
-        with patch('netrc.netrc.authenticators') as mock_authenticator:
-            mock_authenticator.side_effect = Exception('No netrc')
-            with patch('os.path.isfile') as mock_isfile:
-                mock_isfile.return_value = False
-                c = DataClient(certfile=test_cert)
-        self.assertIsNone(c.certificate_file_location)
-        self.assertIsNone(c.basic_auth)
-        self.assertFalse(c.is_authorized)
-        self.assertEqual(c.protocol,'http')
-
-        # bad certfile provided, good netrc results in authorized client
-        with patch('netrc.netrc.authenticators') as mock_authenticator:
-            with patch('os.path.isfile') as mock_isfile:
-                mock_isfile.return_value = False
-                c = DataClient(certfile=test_cert)
-        self.assertIsNone(c.certificate_file_location)
-        self.assertIsNotNone(c.basic_auth)
-        self.assertTrue(c.is_authorized)
-        self.assertEqual(c.protocol,'http')
-
-        # cert and netrc are both provided. Only use cert
-        with patch('netrc.netrc.authenticators') as mock_authenticator:
-            mock_authenticator.return_value = ['janedoe','account','password']
-            with patch('os.path.isfile') as mock_isfile:
-                c = DataClient(certfile=test_cert)
-        self.assertEqual(c.certificate_file_location,test_cert)
-        self.assertIsNone(c.basic_auth)
-        self.assertTrue(c.is_authorized)
-        self.assertEqual(c.protocol,'https')
-
-        # cert and netrc are both provided but request anonymous
-        with patch('netrc.netrc.authenticators') as mock_authenticator:
-            mock_authenticator.return_value = ['janedoe','account','password']
-            with patch('os.path.isfile') as mock_isfile:
-                c = DataClient(certfile=test_cert,anonymous=True)
-        self.assertIsNone(c.certificate_file_location)
-        self.assertIsNone(c.basic_auth)
-        self.assertFalse(c.is_authorized)
-        self.assertEqual(c.protocol,'http')
-
-        # Some DataClient specific tests
         self.assertIsNotNone(c.transfer_reader)
         self.assertFalse(c.transfer_reader.validate)
         self.assertIsNotNone(c.transfer_writer)

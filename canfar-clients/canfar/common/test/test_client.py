@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env python2.7
+# -*- coding: utf-8 -*-
 # ************************************************************************
 # *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -64,50 +65,99 @@
 # *
 # ************************************************************************
 
-# Ensure we're using the local rather than installed version.
-# Note that this doesn't seem to work with installed eggs (e.g.,
-# $ python setup.py install), so you may need to manually
-# remove them first.
+""" Defines TestClient class """
+from mock import Mock, MagicMock, patch, mock_open, call
+import unittest
+import requests
+import os
+import sys
 
-OLDPYTHONPATH=${PYTHONPATH}
-export ROOT_DIR=$(pwd)
-export PYTHONPATH=${ROOT_DIR}:${OLDPYTHONPATH}
-export PYTHON="/bin/env python"
+test_cert = 'cadcproxy.pem'
 
-echo ""
-echo "***"
-echo "Python path: ${PYTHONPATH}"
-echo "***"
-echo ""
+# put local code at top of the search path
+sys.path.insert(0, os.path.abspath('../../../'))
 
-#
-# A return value of 1 indicates the element is not in.
-#
-elementNotIn ()
-{
-  local e
-  for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
-  return 1
-}
+from canfar.common.client import BaseClient
 
-# Add to this array as needed.
-UNIT_TEST_DIRS=("canfar/groups" "canfar/common")
-#IGNORE_TEST_SCRIPTS=("test_group_reader_writer.py")
+class TestClient(unittest.TestCase):
 
-for TEST_DIR in "${UNIT_TEST_DIRS[@]}"; do
-  cd ${ROOT_DIR}/${TEST_DIR}/test
-  TEST_SCRIPTS=`/bin/ls test*.py`
-  for TEST_SCRIPT in ${TEST_SCRIPTS}; do
-    CURR_DIR=$(pwd)
-    elementNotIn "${TEST_SCRIPT}" ${IGNORE_TEST_SCRIPTS}
-    if [ ${?} == 1 ]; then
-      echo "Running: ${CURR_DIR}/${TEST_SCRIPT}"
-      ${PYTHON} -m trace --count -s -m --ignore-dir=${VIRTUAL_ENV}:/usr \
-          ${TEST_SCRIPT}
-    else
-      echo "Ignoring: ${CURR_DIR}/${TEST_SCRIPT}"
-    fi
-  done
-done
+    def test_constructor(self):
+        # default client, patch netrc to ensure no netrc found
+        with patch('netrc.netrc.authenticators') as mock_authenticator:
+            mock_authenticator.side_effect = Exception('No netrc')
+            c = BaseClient()
+        self.assertIsNone(c.certificate_file_location)
+        self.assertIsNone(c.basic_auth)
+        self.assertFalse(c.is_authorized)
+        self.assertEqual(c.protocol,'http')
 
-export PYTHONPATH=${OLDPYTHONPATH}
+        # no certfile, but netrc works, so name+password auth
+        with patch('netrc.netrc.authenticators') as mock_authenticator:
+            mock_authenticator.return_value = ['janedoe','account','password']
+            c = BaseClient()
+        self.assertIsNone(c.certificate_file_location)
+        self.assertIsNotNone(c.basic_auth)
+        self.assertTrue(c.is_authorized)
+        self.assertEqual(c.protocol,'http')
+
+        # certfile authorization, no netrc. Patch open as well so that
+        # it appears to be successful
+        with patch('netrc.netrc.authenticators') as mock_authenticator:
+            mock_authenticator.side_effect = Exception('No netrc')
+            with patch('os.path.isfile') as mock_isfile:
+                c = BaseClient(certfile=test_cert)
+        self.assertEqual(c.certificate_file_location,test_cert)
+        self.assertIsNone(c.basic_auth)
+        self.assertTrue(c.is_authorized)
+        self.assertEqual(c.protocol,'https')
+
+        # bad certfile provided, no netrc, results in anonymous client
+        with patch('netrc.netrc.authenticators') as mock_authenticator:
+            mock_authenticator.side_effect = Exception('No netrc')
+            with patch('os.path.isfile') as mock_isfile:
+                mock_isfile.return_value = False
+                c = BaseClient(certfile=test_cert)
+        self.assertIsNone(c.certificate_file_location)
+        self.assertIsNone(c.basic_auth)
+        self.assertFalse(c.is_authorized)
+        self.assertEqual(c.protocol,'http')
+
+        # bad certfile provided, good netrc results in authorized client
+        with patch('netrc.netrc.authenticators') as mock_authenticator:
+            with patch('os.path.isfile') as mock_isfile:
+                mock_isfile.return_value = False
+                c = BaseClient(certfile=test_cert)
+        self.assertIsNone(c.certificate_file_location)
+        self.assertIsNotNone(c.basic_auth)
+        self.assertTrue(c.is_authorized)
+        self.assertEqual(c.protocol,'http')
+
+        # cert and netrc are both provided. Only use cert
+        with patch('netrc.netrc.authenticators') as mock_authenticator:
+            mock_authenticator.return_value = ['janedoe','account','password']
+            with patch('os.path.isfile') as mock_isfile:
+                c = BaseClient(certfile=test_cert)
+        self.assertEqual(c.certificate_file_location,test_cert)
+        self.assertIsNone(c.basic_auth)
+        self.assertTrue(c.is_authorized)
+        self.assertEqual(c.protocol,'https')
+
+        # cert and netrc are both provided but request anonymous
+        with patch('netrc.netrc.authenticators') as mock_authenticator:
+            mock_authenticator.return_value = ['janedoe','account','password']
+            with patch('os.path.isfile') as mock_isfile:
+                c = BaseClient(certfile=test_cert,anonymous=True)
+        self.assertIsNone(c.certificate_file_location)
+        self.assertIsNone(c.basic_auth)
+        self.assertFalse(c.is_authorized)
+        self.assertEqual(c.protocol,'http')
+
+
+
+def run():
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestClient)
+    return unittest.TextTestRunner(verbosity=2).run(suite)
+
+
+if __name__ == '__main__':
+    run()
