@@ -111,7 +111,7 @@ class BaseClient(object):
     """Base class for interacting with CADC services"""
 
     def __init__(self, certfile=None, anonymous=False, usenetrc=True,
-                 host='www.canfar.phys.uvic.ca'):
+                 host='www.canfar.phys.uvic.ca', log_level=logging.ERROR):
         """
         Client constructor
 
@@ -119,9 +119,11 @@ class BaseClient(object):
         anonymous -- Force anonymous client, regardless of cert/.netrc
         usenetrc  -- Try to use name/password authentication?
         host      -- Override default service host
+        log_level -- How verbose should the client's logger be
         """
 
         self._make_logger()
+        self.setup_logger(log_level=log_level)
         self.host = host
 
         # Unless the caller specifically requests an anonymous client,
@@ -152,6 +154,11 @@ class BaseClient(object):
                     # .netrc check happens automatically, so no need for
                     # a message if it fails
                     pass
+
+        self.logger.debug(
+            "Client authorized: %s, certfile: %s, name/password: %s" % \
+                (str(self.is_authorized), str(self.certificate_file_location),
+                 str(self.basic_auth is not None)) )
 
         # Create a session
         self._create_session()
@@ -186,7 +193,7 @@ class BaseClient(object):
     def get_current_user_dn(self):
         """ Obtain user distinguished name from client's certificate """
 
-        if self.certificate_file_location is not None:
+        if self.certificate_file_location is None:
             raise ValueError(
                 'Unable to extract user DN because no cert provided')
 
@@ -281,13 +288,10 @@ class BaseClient(object):
         """ Override to initialize loggers for different clients """
         self.logger = logging.getLogger('cadcclient')
 
-    def get_logger(self, verbose=True, debug=False, quiet=False):
-        """ Set up and return logger. Default to ERROR level. """
+    def setup_logger(self, log_level=logging.ERROR):
+        """ Setup logger. Default to ERROR level. """
 
         log_format = "%(module)s: %(levelname)s: %(message)s"
-
-        log_level = ((debug and logging.DEBUG) or (verbose and logging.INFO) or
-                     (quiet and logging.FATAL) or logging.ERROR)
 
         if log_level == logging.DEBUG:
             log_format = "%(levelname)s: @(%(asctime)s) - " \
@@ -297,7 +301,6 @@ class BaseClient(object):
         stream_handler = logging.StreamHandler()
         stream_handler.setFormatter(logging.Formatter(fmt=log_format))
         self.logger.addHandler(stream_handler)
-        return self.logger
 
     def check_exception(self, response):
         """

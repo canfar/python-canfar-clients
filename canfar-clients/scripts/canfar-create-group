@@ -88,18 +88,18 @@ if __name__ == '__main__':
                         help="PI username to create.")
 
     args = parser.parse_args()
+    log_level = parser.get_log_level(args)
     groupname = args.groupname
     pi_username = args.pi_username
     certfile = args.certfile
 
     # os.environ['AC_WEBSERVICE_HOST'] = 'jburke.cadc.dao.nrc.ca'
 
-    # Create a GMS client and check for membership
+    # Create a groups client and check for membership
     try:
-        c = GroupsClient(certfile)
+        c = GroupsClient(certfile, log_level=log_level)
         # get the gmsclient logger
-        logger = c.get_logger(verbose=args.verbose, debug=args.debug,
-                              quiet=args.quiet)
+        logger = c.logger
 
         group = Group(groupname, User(Identity(c.current_user_dn, 'X500')))
         if pi_username:

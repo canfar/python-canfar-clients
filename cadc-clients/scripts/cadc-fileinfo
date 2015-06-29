@@ -85,28 +85,22 @@ if __name__=='__main__':
     parser.add_argument('filename', help='File name in archive')
 
     args=parser.parse_args()
-
+    log_level = parser.get_log_level(args)
     certfile=args.certfile
     host=args.host
     anonymous=args.anonymous
     archive = args.archive
     filename = args.filename
 
-    # Create a data client and logger
+    # Create a data client
     try:
         # Schema validation is slow due to large initial overhead (~1.5s) ?
         c = DataClient(certfile=certfile, schema_validate=False,
-                       host=host, anonymous=anonymous)
-        logger = c.get_logger(verbose=args.verbose, debug=args.debug,
-                              quiet=args.quiet)
-        logger.debug("Start")
+                       host=host, anonymous=anonymous, log_level=log_level)
+        c.logger.debug("Start")
     except Exception as e:
-        print e
+        print str(e)
         sys.exit(1)
-
-    logger.debug("Client authorized: %s, certfile: %s, name/password: %s" % \
-                     (str(c.is_authorized), str(c.certificate_file_location),
-                      str(c.basic_auth is not None)) )
 
     # Check file
     try:
@@ -115,9 +109,11 @@ if __name__=='__main__':
         print str(e)
         sys.exit(1)
 
-    for k in r.headers:
-        print '%s=%s' % (k, r.headers[k])
+    # Display header values unless --quiet
+    if log_level < logging.FATAL:
+        for k in r.headers:
+            print '%s=%s' % (k, r.headers[k])
 
     # Good exit status if we get here
-    logger.debug("End")
+    c.logger.debug("End")
     sys.exit(0)

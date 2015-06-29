@@ -108,7 +108,7 @@ if __name__=='__main__':
                         help='continue even if individual file transfers fail')
 
     args=parser.parse_args()
-
+    log_level = parser.get_log_level(args)
     certfile=args.certfile
     host=args.host
     anonymous=args.anonymous
@@ -147,19 +147,17 @@ if __name__=='__main__':
     stream = args.stream
     filename = args.filename
 
-    # Create a data client and logger
+    # Create a data client
     try:
         # Schema validation is slow due to large initial overhead (~1.5s) ?
         c = DataClient(certfile=certfile, schema_validate=False,
-                       host=host, anonymous=anonymous)
-        logger = c.get_logger(verbose=args.verbose, debug=args.debug,
-                              quiet=args.quiet)
-        logger.debug("Start")
+                       host=host, anonymous=anonymous, log_level=log_level)
+        c.logger.debug("Start")
     except Exception as e:
-        print e
+        print str(e)
         sys.exit(1)
 
-    logger.debug("Client authorized: %s, certfile: %s, name/password: %s" % \
+    c.logger.debug("Client authorized: %s, certfile: %s, name/password: %s" % \
                      (str(c.is_authorized), str(c.certificate_file_location),
                       str(c.basic_auth is not None)) )
 
@@ -180,19 +178,19 @@ if __name__=='__main__':
             filename = None
 
         try:
-            logger.info("Transferring %s" % file)
+            c.logger.info("Transferring %s" % file)
             c.transfer_file(file, archive=archive, filename=filename,
                             is_put=is_put, stream=stream)
         except Exception as e:
             if ignorefailures:
-                logger.error("Failed transfer of %s. Continuing." % file)
+                c.logger.error("Failed transfer of %s. Continuing." % file)
                 next
             else:
-                logger.exception("Failed to transfer file %s:\n%s" % \
+                c.logger.exception("Failed to transfer file %s:\n%s" % \
                                      (file, str(e)))
-                logger.debug("End")
+                c.logger.debug("End")
                 sys.exit(1)
 
     # Good exit status if we get here
-    logger.debug("End")
+    c.logger.debug("End")
     sys.exit(0)

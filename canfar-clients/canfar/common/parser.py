@@ -64,6 +64,7 @@
 # *
 # ************************************************************************
 
+import logging
 import netrc
 import os
 from argparse import ArgumentParser
@@ -103,3 +104,11 @@ class BaseParser(ArgumentParser):
             self.add_argument('--version', action='version',
                               version=version)
 
+    def get_log_level(self, args):
+        """ Obtain a single logger level from parsed args """
+
+        log_level = ((args.debug and logging.DEBUG) or
+                     (args.verbose and logging.INFO) or
+                     (args.quiet and logging.FATAL) or logging.ERROR)
+
+        return log_level

@@ -84,16 +84,16 @@ if __name__=='__main__':
     parser.add_argument('groupname', type=str, help="Group name to get")
 
     args=parser.parse_args()
+    log_level = parser.get_log_level(args)
     groupname=args.groupname
     certfile=args.certfile
 
     # Create a groups client and get group
     group = None
     try:
-        c = GroupsClient(certfile)
+        c = GroupsClient(certfile, log_level=log_level)
         # get the GroupsClient logger
-        logger = c.get_logger(verbose=args.verbose, debug=args.debug,
-                        quiet=args.quiet)
+        logger = c.logger
 
         writer = GroupWriter()
         reader = GroupReader()

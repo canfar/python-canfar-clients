@@ -90,6 +90,7 @@ if __name__=='__main__':
                         default='member')
 
     args=parser.parse_args()
+    log_level = parser.get_log_level(args)
     groupnames=args.groupnames
     certfile=args.certfile
     role=Role(args.role)
@@ -97,13 +98,11 @@ if __name__=='__main__':
     # Create a groups client and check for membership
     is_member = False
     try:
-        c = GroupsClient(certfile)
-        # get the gmsclient logger
-        logger = c.get_logger(verbose=args.verbose, debug=args.debug,
-                   	         quiet=args.quiet)
-
+        c = GroupsClient(certfile, log_level=log_level)
+        group = c.get_group(groupnames)
         is_member = c.is_member(groupnames,role=role)
-    except:
+    except Exception as e:
+        print str(e)
         sys.exit(1)
 
     print is_member

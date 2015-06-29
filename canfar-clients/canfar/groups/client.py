@@ -78,7 +78,7 @@ from canfar.common.client import BaseClient
 class GroupsClient(BaseClient):
     """Class for interacting with the access control web service"""
 
-    def __init__(self, certfile=None):
+    def __init__(self, *args, **kwargs):
         """GMS client constructor. The dn will be extracted from the
         x509 cert and available as a default for user_id in other
         method calls.
@@ -87,7 +87,7 @@ class GroupsClient(BaseClient):
         """
 
         # This client does not support name/password authentication
-        super(GroupsClient, self).__init__(certfile=certfile,usenetrc=False)
+        super(GroupsClient, self).__init__(usenetrc=False, *args, **kwargs)
 
         # Specific base_url for AC webservice
         host = os.getenv('AC_WEBSERVICE_HOST', self.host)
