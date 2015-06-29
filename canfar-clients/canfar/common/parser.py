@@ -90,7 +90,8 @@ class BaseParser(ArgumentParser):
         self.add_argument('--anonymous', action="store_true", default=False,
                           help='Force anonymous connection')
         self.add_argument('--host', help="Base hostname for services"
-                          + "(default=www.canfar.phys.uvic.ca")
+                          + "(default=www.canfar.phys.uvic.ca",
+                          default='www.canfar.phys.uvic.ca')
         self.add_argument('--verbose', action="store_true", default=False,
                           help='verbose messages')
         self.add_argument('--debug', action="store_true", default=False,

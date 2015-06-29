@@ -255,6 +255,13 @@ class BaseClient(object):
 
         return xml_string
 
+    def _head_request(self, url):
+        """ Perform a HEAD request on URL and return response """
+        response = self.session.head(url, verify=False)
+        self.check_exception(response)
+
+        return response
+
     def _create_session(self):
         self.logger.debug('Creating session.')
 
@@ -264,7 +271,6 @@ class BaseClient(object):
         # are provided.
         self.session = requests.Session()
         self.session.auth = self.basic_auth
-
         if self.certificate_file_location is not None:
             self.session.mount('https://',
                                SSLAdapter(_SSL_VERSION,

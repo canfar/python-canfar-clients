@@ -85,10 +85,16 @@ class DataClient(BaseClient):
         self.transfer_reader = TransferReader(validate=schema_validate)
         self.transfer_writer = TransferWriter()
 
-        # Specific base_url for data webservice
+        # Specific base_url for data webservice, and a separate base URL
+        # that will be used for HEAD requests (either */data/auth or
+        # */data/pub).
         self.base_url = self.base_url + '/data'
+        self.head_base_url = self.base_url
         if self.basic_auth is not None:
             self.base_url = self.base_url + '/auth'
+            self.head_base_url = self.head_base_url + '/auth'
+        else:
+            self.head_base_url = self.head_base_url + '/pub'
         self.base_url = self.base_url + '/transfer'
 
     def _make_logger(self):
@@ -177,7 +183,7 @@ class DataClient(BaseClient):
                 continue
 
 
-            self.logger.debug('Transferring %s %s...' % (dir_str, url) )
+            self.logger.debug('Transferring %s %s' % (dir_str, url) )
 
             try:
                 if is_put:
@@ -213,7 +219,11 @@ class DataClient(BaseClient):
 
         # Do a HEAD to compare md5sums?
 
-    def file_info(self, uri):
-        """ Get information about a file at given uri """
+    def data_info(self, archive, filename):
+        """ Perform a HEAD with data web service for minimal information """
 
-        self.logger.info('Does not do anything yet')
+        url = self.head_base_url + '/%s/%s' % (archive,filename)
+        self.logger.debug('Performing HEAD request on %s' % (url) )
+        r = self._head_request(url)
+
+        return r
