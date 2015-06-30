@@ -6,6 +6,7 @@ import os
 import sys
 import uuid
 import unittest
+import logging
 
 # put local code at top of the search path
 sys.path.insert(0, os.path.abspath('../'))
@@ -36,6 +37,8 @@ class GroupsClientIntTest(unittest.TestCase):
     def test_groups_client(self):
         self.init()
 
+        # Use the first version for lots of debugging information
+        #client = GroupsClient(self.cert_file, log_level=logging.DEBUG)
         client = GroupsClient(self.cert_file)
 
         # create the owner

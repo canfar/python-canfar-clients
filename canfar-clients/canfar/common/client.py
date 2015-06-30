@@ -213,6 +213,8 @@ class BaseClient(object):
             x509_dn = ""
             for part in x509.get_issuer().get_components():
                 x509_dn = x509_dn + '='.join(part) + ','
+            x509_dn = x509_dn.rstrip(',')
+            self.logger.debug('Read X509 dn: %s' % x509_dn)
             return x509_dn.rstrip(',')
         except crypto.Error, e:
             self.logger.error('Failed to parse certfile: {}'.format(str(e)))

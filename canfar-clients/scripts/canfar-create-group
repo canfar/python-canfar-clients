@@ -92,13 +92,13 @@ if __name__ == '__main__':
     groupname = args.groupname
     pi_username = args.pi_username
     certfile = args.certfile
-
-    # os.environ['AC_WEBSERVICE_HOST'] = 'jburke.cadc.dao.nrc.ca'
+    anonymous=args.anonymous
+    host=args.host
 
     # Create a groups client and check for membership
     try:
-        c = GroupsClient(certfile, log_level=log_level)
-        # get the gmsclient logger
+        c = GroupsClient(certfile=certfile, anonymous=anonymous,
+                         log_level=log_level, host=host)
         logger = c.logger
 
         group = Group(groupname, User(Identity(c.current_user_dn, 'X500')))
@@ -109,10 +109,12 @@ if __name__ == '__main__':
         c.create_group(group)
         sys.exit(0)
     except ValueError as ve:
-        logger.error(ve.message)
+        print str(ve)
+        sys.exit(-1)
     except UserNotFoundException:
         logger.error("Unable to PUT new group. User '{}' not found."
                      .format(c.get_current_user_dn()))
+        sys.exit(-1)
     except GroupExistsException:
         logger.info("Unable to PUT new group. Group '{}' already exists."
                     .format(groupname))
@@ -130,8 +132,10 @@ if __name__ == '__main__':
             group.user_admins.add(current_user)
             try:
                 c.update_group(group)
+                sys.exit(0)
             except UserNotFoundException:
                 logger.error("Unable to update existing group. User admin '{}' not found."
                              .format(current_user.user_id))
+                sys.exit(-1)
         else:
-            raise
+            sys.exit(-1)
