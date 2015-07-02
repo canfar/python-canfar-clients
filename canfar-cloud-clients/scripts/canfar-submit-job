@@ -65,29 +65,30 @@
 #
 # ***********************************************************************
 
-"""Get or put a file to the CADC storage system."""
+"""Submit a batch job to the proc service"""
 
-from cadc.__version__ import version
-from cadc.data.client import DataClient
-from canfar.common.parser import BaseParser
-from argparse import RawDescriptionHelpFormatter
+import os
 import sys
-import logging
-import glob
-description = "Get or Put a file to the CADC storage system."
-epilog = """This client is capable of getting/putting multiple files.
+import traceback
+from argparse import RawDescriptionHelpFormatter
 
-A single file:
-  $ cadc-copy put TEST publicEd
+from canfar.__version__ import version
+from canfar.common.parser import BaseParser
+from canfar.proc.client import ProcClient
 
-Multiple files (must be quoted):
-  $ cadc-copy put TEST 'file1 file2'
+from keystoneclient.apiclient import exceptions as keystone_exceptions
 
-Multiple files using glob (put only, must be quoted):
-  $ cadc-copy put TEST 'file*'
+description = "Submit a job to the CANFAR proc (batch) service."
+epilog = """Examples (assuming OS_* environment variables already set)
 
-Multiple files, specifying individual archive filenames:
-  $ cadc-copy put TEST 'file1 file2' --filename='remotefile1 remotefile2'
+Submit a job:
+
+  $ canfar-submit-job job.sub vm_image p1-1.5gb
+
+Share image with batch tenant and display job without POSTing to service:
+
+  $ canfar-submit-job job.sub vm_image p1-1.5gb --nopost
+
 """
 
 
@@ -95,97 +96,74 @@ if __name__=='__main__':
 
     # Parse the command line
     parser = BaseParser(description=description, epilog=epilog,
-                        version=version,
+                        version=version, usecert=False,
                         formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('dir', choices=['get','put'], help='Direction')
-    parser.add_argument('archive', help='Archive name')
-    parser.add_argument('file', help='File(s) on local disk')
-    parser.add_argument('--stream', default=None, help='Stream name')
-    parser.add_argument('--filename', default=None,
-                        help='Filename(s) in archive (defaults to file)')
-    parser.add_argument('--ignorefailures', action='store_true',
-                        default=False,
-                        help='continue even if individual file transfers fail')
+    parser.add_argument('jobfile',help='Condor job description file')
+    parser.add_argument('image',help='VM image for job (name or ID)')
+    parser.add_argument('flavor',help='hardware flavor (name or ID)')
+    parser.add_argument('--jobscriptonvm', default=None,
+                        help='Execution script that already exists on VM')
+    parser.add_argument('--nopost',default=False,action='store_true',
+                        help='Share VM but do not actually POST to service')
+    parser.add_argument('--os-username',
+                        help='user name if OS_USERNAME not set')
+    parser.add_argument('--os-password',help='password if OS_PASSWORD not set')
+    parser.add_argument('--os-tenant-name',
+                        help='tenant name for image if OS_TENANT_NAME not set')
+    parser.add_argument('--os-auth-url',help='auth URL if OS_AUTH_URL not set')
 
     args=parser.parse_args()
     log_level = parser.get_log_level(args)
-    certfile=args.certfile
     host=args.host
-    anonymous=args.anonymous
-    dir=args.dir
-    if dir == 'put':
-        is_put = True
-    else:
-        is_put = False
-    archive = args.archive
-    ignorefailures = args.ignorefailures
 
-    # The user can specify a single local file, a list of files,
-    # or a glob
-    files = glob.glob(args.file)
-    if not files:
-        # glob returned nothing, so assume we have space-separated
-        # list of files
-        parts = args.file.split(' ')
-        files = []
-        for part in parts:
-            if part != '':
-                files.append(part)
+    jobfile = args.jobfile
+    image = args.image
+    flavor = args.flavor
+    jobscriptonvm = args.jobscriptonvm
+    nopost = args.nopost
+    anonymous = args.anonymous
 
-    # if filename is provided, need same number as files (space-separated)
-    if args.filename:
-        filenames = []
-        parts = args.filename.split(' ')
-        for part in parts:
-            if part != '':
-                filenames.append(part)
-        if len(filenames) != len(files):
-            raise ValueError("Number of names in --filename must match file")
-    else:
-        filenames = None
+    # OpenStack auth parameters dict
+    auth = {'username': None,
+            'password': None,
+            'tenant_name': None,
+            'auth_url': None}
+    for key in auth:
+        argname = 'os_'+key
+        osvar = argname.upper()
+        if eval( 'args.'+argname ):
+            auth[key] = eval( 'args.'+argname )
+        elif osvar in os.environ:
+            auth[key] = os.environ[osvar]
+        else:
+            print "Neither --%s nor %s set in the environment" \
+                % (argname.replace('_','-'), osvar)
+            sys.exit(1)
 
-    stream = args.stream
-    filename = args.filename
 
-    # Create a data client
     try:
-        # Schema validation is slow due to large initial overhead (~1.5s) ?
-        c = DataClient(certfile=certfile, schema_validate=False,
-                       host=host, anonymous=anonymous, log_level=log_level)
+        # Create a proc client
+        c = ProcClient(auth, host=host, anonymous=anonymous,
+                       log_level=log_level)
         c.logger.debug("Start")
-    except Exception as e:
-        print str(e)
+    except Exception as E:
+        traceback.print_exc()
+        print str(E)
         sys.exit(1)
 
-    # hack for VOSpace testing
-    #if c.basic_auth:
-    #    auth_url='auth/'
-    #else:
-    #    auth_url=''
-    #c.base_url = '%s://%s/vospace/%ssynctrans' % (c.protocol,c.host,auth_url)
-    #uri = 'vos:/echapin/%s' % filename
+    try:
+        # Submit a job for processing
+        c.submit_job(jobfile, image, flavor, jobscriptonvm=jobscriptonvm, \
+                         nopost=nopost)
+    except Exception as E:
+        c.logger.exception(str(E))
+        if isinstance(E, keystone_exceptions.Unauthorized):
+            c.logger.warning(
+                'Are your name, password, and tenant set correctly? ' + \
+                '(e.g., did you source a valid openrc file to set ' + \
+                'OS_* environment variables ?)')
+        sys.exit(1)
 
-    # Copy file(s)
-    for i in range(len(files)):
-        file = files[i]
-        if filenames is not None:
-            filename = filenames[i]
-        else:
-            filename = None
-
-        try:
-            c.logger.info("Transferring %s" % file)
-            c.transfer_file(file, archive=archive, filename=filename,
-                            is_put=is_put, stream=stream)
-        except Exception as e:
-            if ignorefailures:
-                c.logger.error("Failed transfer of %s. Continuing." % file)
-                next
-            else:
-                c.logger.exception("Failed to transfer file %s:\n%s" % \
-                                     (file, str(e)))
-                c.logger.debug("End")
-                sys.exit(1)
 
     # Good exit status if we get here
     c.logger.debug("End")

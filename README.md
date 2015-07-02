@@ -1,5 +1,5 @@
 # python-canfar-clients
-This repository contains Python client libraries and command-line utilities for interacting with [CANFAR](http://www.canfar.phys.uvic.ca/) and [CADC](http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/) web services, under `canfar-clients/` and `cadc-clients/`, respectively.
+This repository contains Python client libraries and command-line utilities for interacting with [CANFAR](http://www.canfar.phys.uvic.ca/) and [CADC](http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/) web services, under `canfar-clients/` and `cadc-clients/`, respectively. `canfar-cloud-clients/` contains a package that extends `canfar-clients` to interact with CANFAR services that depend on external OpenStack cloud providers.
 
 ## Shared virtual environment
 If you are working on `cadc-clients` you will also want to have `canfar-clients` installed, as it is a dependency. In this event a shared virtual environment (**venv**) will be useful.
@@ -21,7 +21,7 @@ build and install it to the **venv**:
 ```
 $ pip install -r canfar-clients/requirements.txt
 $ cd canfar-clients
-$ python setup.py instal
+$ python setup.py install
 $ cd ..
 ```
 
@@ -31,5 +31,13 @@ develop/install it in the **venv** as well:
 $ pip install -r cadc-clients/requirements.txt
 $ cd cadc-clients
 $ python setup.py install
+$ cd ..
 ```
 
+Similarly, `canfar-cloud-clients` extends (and therefore depends on) `canfar-clients`, so it may also be developed/installed once `canfar-clients` is installed in the **venv**:
+```
+$ pip install -r canfar-cloud-clients/requirements.txt
+$ cd canfar-cloud-clients
+$ python setup.py instal
+$ cd ..
+```

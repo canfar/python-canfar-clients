@@ -29,7 +29,7 @@
 # *   Script Name:       setup.py
 # *
 # *   Purpose:
-# *      Distutils setup script for CADC Python clients
+# *      Distutils setup script for CANFAR Cloud Python clients
 # *
 # *   Functions:
 # *
@@ -58,17 +58,17 @@ for script in os.listdir(script_dir):
         continue
     scripts.append(os.path.join(script_dir, script))
 
-setup(name='canfar',
+setup(name='canfarcloud',
       version=version,
-      description='CANFAR Python Clients',
+      description='CANFAR Cloud Python Clients',
       url='http://www.canfar.net',
       author='Canadian Astronomy Data Centre',
       author_email='cadc@nrc.ca',
       license='GPLv3',
-      long_description='Python client libraries and scripts for CANFAR web services',
+      long_description='Python client libraries and scripts for CANFAR cloud services',
       packages=find_packages(),
       scripts=scripts,
-      provides=['canfar'],
+      provides=['canfarcloud'],
       zip_safe=False,
       namespace_packages = ['canfar'],
-      requires=['pyOpenSSL', 'lxml', 'requests'])
+      requires=['pyOpenSSL', 'lxml', 'requests', 'canfar'])
