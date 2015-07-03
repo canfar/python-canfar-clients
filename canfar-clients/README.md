@@ -1,4 +1,4 @@
-# CANFAR
+# canfar
 This Python package provides client libraries and command-line utilities for interacting with [CANFAR](http://www.canfar.phys.uvic.ca/) web services.
 
 ## Installation

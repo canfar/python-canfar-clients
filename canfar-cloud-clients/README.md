@@ -1,5 +1,5 @@
-# CANFAR-cloud
-This Python package extends the **canfar** package by providing client libraries and command-line utilities for interacting with [CANFAR](http://www.canfar.phys.uvic.ca/) cloud services. It is packaged separately due to the significantly larger external dependencies on [OpenStack](https://www.openstack.org/).
+# canfar-cloud
+This Python package extends the **canfar** package by providing client libraries and command-line utilities for interacting with [CANFAR](http://www.canfar.phys.uvic.ca/) services that depend on external OpenStack cloud providers. It is packaged separately due to the significantly larger external dependencies on [OpenStack](https://www.openstack.org/).
 
 ## Installation
 The `requirements.txt` file can be used to install all necessary dependencies globally:
@@ -24,7 +24,7 @@ $ python setup.py install --help
 for additional options (e.g., `--prefix`, `--install-scripts`)
 
 ## Usage
-The command-line client scripts provided by this package communicate both with OpenStack and CANFAR web servers. At present, the authentication systems have not been fully integrated, and it is assumed that a CANFAR user with username `jane` will have a mirror OpenStack account with username `jane-canfar`, and the same password in both instances. Rather than using the certificate or `.netrc` style of authentication as for other CANFAR clients, these scripts follow the OpenStack convention of specifying: (i) name; (ii) password; (iii) tenant name; and (iv) OpenStack auth service URL, typically by sourcing an [OpenStack RC File](http://www.canfar.net/docs/cli/#setup-the-environment), or specifying their values directly on the command-line.
+The command-line client scripts provided by this package communicate both with OpenStack and CANFAR web servers. At present, the authentication systems have not been fully integrated, and it is assumed that a CANFAR user with username `jane` will have a mirror OpenStack account with username `jane-canfar`, and the same password in both cases. Rather than using the certificate or `.netrc` style of authentication as for other CANFAR clients, these scripts follow the OpenStack convention of specifying: (i) name; (ii) password; (iii) tenant name; and (iv) OpenStack auth service URL, typically by sourcing an [OpenStack RC File](http://www.canfar.net/docs/cli/#setup-the-environment), or specifying their values directly on the command-line.
 
 ### Submit batch job to the proc service
 
@@ -87,8 +87,5 @@ $ python -m trace --count -s -m --ignore-dir=${VIRTUAL_ENV}:/usr test_client.py
 ```
 
 ### Integration Tests
-The integration tests require credentials with access to CANFAR and the OpenStack cloud at WestGrid.
 
-1. Set the environment variable `$CADC_ROOT` to the path where CADC software are installed.
-2. Install the clients (to the venv) using `$ python setup.py install`
-3. `$ test/inttest`
+Presently there is only a minimal test stub in `test/inttest`.
