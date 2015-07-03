@@ -95,6 +95,10 @@ class ProcClient(BaseClient):
         # as name/password authentication with the CANFAR proc
         # service. Note that the CANFAR username is assumed to be the
         # OpenStack username with a '-canfar' suffix removed.
+
+        for key in ['username','password','tenant_name','auth_url']:
+            if key not in auth:
+                raise ValueError('auth dict does not contain %s' % key)
         self.auth = auth
         canfar_user = self.auth['username'].split('-canfar')[0]
         basic_auth = HTTPBasicAuth(canfar_user, self.auth['password'])
@@ -133,6 +137,7 @@ class ProcClient(BaseClient):
 
         glance_endpoint = self.kclient.service_catalog.url_for(
             service_type='image')
+
         self.gclient = glclient.Client(glance_endpoint,
                                        token=self.kclient.auth_token)
         self.nclient = nclient.Client(2, self.auth['username'],
@@ -175,11 +180,11 @@ class ProcClient(BaseClient):
                     matches.append(im['id'])
 
             if len(matches) == 0:
-                raise Exception("Couldn't find image named '%s'" % image_name)
+                raise ValueError("Couldn't find image named '%s'" % image_name)
             elif len(matches) > 1:
                 errstr="Multiple image IDs in tenant '%s' match image name '%s':\n%s"\
                     % (self.auth['tenant_name'], image_name, '\n'.join(matches))
-                raise Exception(errstr)
+                raise ValueError(errstr)
             else:
                 # unique image_id
                 image_id = matches[0]
@@ -223,7 +228,7 @@ class ProcClient(BaseClient):
                 msg = "Supplied flavor '%s' is not valid. Must be one of:\n"\
                     % flavor
                 msg = msg + ', '.join(flavor_names)
-                raise Exception(msg)
+                raise ValueError(msg)
 
         return flavor_id, flavor_name
 
@@ -260,11 +265,7 @@ class ProcClient(BaseClient):
                    nopost=False):
 
         # Read in jobfile
-        try:
-            jobfile_data = open(jobfile,'r').read()
-        except:
-            raise Exception("Could not read the contents of jobfile '%s'" \
-                                % jobfile)
+        jobfile_data = open(jobfile,'r').read()
 
         # Search for the name of the job execution script in the Condor
         # job description file
@@ -274,7 +275,7 @@ class ProcClient(BaseClient):
 
         if matches:
             if len(matches) > 1:
-                raise Exception(
+                raise ValueError(
                     "Multiple 'Executable' values in jobfile:\n%s" % \
                         '\n'.join(matches))
             elif jobscriptonvm:
@@ -284,7 +285,7 @@ class ProcClient(BaseClient):
                 jobscript = matches[0]
                 jobscript_data = open(jobscript,'r').read()
         elif not jobscriptonvm:
-            raise Exception(
+            raise ValueError(
                 "Must specify 'Executable' in jobfile or '--jobscriptonvm'")
 
         self.logger.warning(

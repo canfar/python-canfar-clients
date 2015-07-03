@@ -147,7 +147,7 @@ class BaseClient(object):
             if not self.is_authorized:
                 if basic_auth is not None:
                     self.basic_auth = basic_auth
-                    self.is_authorized
+                    self.is_authorized = True
                 elif usenetrc:
                     try:
                         auth = netrc.netrc().authenticators(self.host)
