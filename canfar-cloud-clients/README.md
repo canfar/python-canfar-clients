@@ -70,6 +70,7 @@ $ source venv/bin/activate
 ```
 
 **Notes:**
+
 1. There is an **ant** `build.xml` file used at the CADC for integration with the continuous build system. The `test` target can be used to create a **venv** (although it is placed under `/tmp/`). Most developers need not concern themselves with `build.xml`.
 2. `requirements.txt` (used above with **pip**) has the full list of requirements for development (including tests), whereas the `requires` field in `setup.py` is used by **setuputils** to determine dependencies only for the *installed* packages/scripts (i.e., some things like **mock** are not needed by normal users).
 
