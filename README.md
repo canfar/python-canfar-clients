@@ -9,18 +9,24 @@ python-canfar-clients
 |  |  |--common          # canfar.common
 |  |  +--groups          # canfar.groups
 |  |--scripts            # command-line scripts
+|  |  |--canfar-create-group
+|  |  |--canfar-get-group
+|  |  +--canfar-is-member
 |  +--test               # integration tests
 |
 |--cadc-clients          # Root of "cadc" package, depends on "canfar"
 |  |--cadc               # cadc
 |  |  +--data            # cadc.data
 |  |--scripts            # command-line scripts
+|  |  |--cadc-copy
+|  |  +--cadc-fileinfo
 |  +--test               # integration tests
 |
 +--canfar-cloud-clients  # Root of "canfarcloud" package, depends on "canfar"
    |--canfar             # canfar -- extends namespace package "canfar"
    |  +--proc            # canfar.proc
    |--scripts            # command-line scripts
+   |  +--canfar-job-submit
    +--test               # integration tests
 ```
 
@@ -41,7 +47,7 @@ $ source venv/bin/activate
 ```
 
 Then, install the missing external dependencies for `canfar-clients`, and build
-build and install it to the **venv**:
+and install it to the **venv**:
 ```
 $ pip install -r canfar-clients/requirements.txt
 $ cd canfar-clients
