@@ -84,26 +84,30 @@ if __name__=='__main__':
     parser.add_argument('groupname', type=str, help="Group name to get")
 
     args=parser.parse_args()
+    log_level = parser.get_log_level(args)
     groupname=args.groupname
     certfile=args.certfile
+    anonymous=args.anonymous
+    host=args.host
 
     # Create a groups client and get group
     group = None
     try:
-        c = GroupsClient(certfile)
-        # get the GroupsClient logger
-        logger = c.get_logger(verbose=args.verbose, debug=args.debug,
-                        quiet=args.quiet)
-
-        writer = GroupWriter()
-        reader = GroupReader()
-
-        # Overkill with reading and writing?
-        logger.info("Looking up %s" % groupname)
-        sys.stdout.write(c.get_group(groupname))
+        c = GroupsClient(certfile=certfile, anonymous=anonymous,
+                         log_level=log_level, host=host)
+        logger = c.logger
+        g = c.get_group(groupname)
+        print "  description=" + str(g.description)
+        print "last_modified=" + str(g.last_modified)
+        print "   properties=" + str(g.properties)
+        print " user_members=" + str(g.user_members)
+        print "group_members=" + str(g.group_members)
+        print "  user_admins=" + str(g.user_admins)
+        print " group_admins=" + str(g.group_admins)
         sys.exit(0)
     except ValueError as ve:
-        logger.error(ve.message)
+        print str(ve)
+        sys.exit(-1)
     except exceptions.GroupNotFoundException:
         logger.warn("Group not found.")
         sys.exit(404)

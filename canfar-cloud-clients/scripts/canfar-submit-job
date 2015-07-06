@@ -65,45 +65,106 @@
 #
 # ***********************************************************************
 
-"""Given an x509 cert determine if a user is a member of at least one
-of a list of groups"""
+"""Submit a batch job to the proc service"""
 
-from canfar.groups.client import GroupsClient
-from canfar.groups.role import Role
+import os
+import sys
+import traceback
+from argparse import RawDescriptionHelpFormatter
+
 from canfar.__version__ import version
 from canfar.common.parser import BaseParser
-import sys
+from canfar.proc.client import ProcClient
 
-description = "Determine whether a user (identified by CADC proxy cert) is a member of any of a set of groups"
+from keystoneclient.apiclient import exceptions as keystone_exceptions
+
+description = "Submit a job to the CANFAR proc (batch) service."
+epilog = """Examples (assuming OS_* environment variables already set)
+
+Submit a job:
+
+  $ canfar-submit-job job.sub vm_image p1-1.5gb
+
+Share image with batch tenant and display job without POSTing to service:
+
+  $ canfar-submit-job job.sub vm_image p1-1.5gb --nopost
+
+"""
+
 
 if __name__=='__main__':
 
     # Parse the command line
-    parser = BaseParser(description=description,version=version)
-    parser.add_argument('groupnames', metavar='groupname',
-                        type=str, nargs='+',
-                        help="list of group names in which to check membership")
-
-    parser.add_argument('--role',
-                        help="type of role: %s (default=member)" \
-                            % " ".join(Role.allowable_roles),
-                        default='member')
+    parser = BaseParser(description=description, epilog=epilog,
+                        version=version, usecert=False,
+                        formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('jobfile',help='Condor job description file')
+    parser.add_argument('image',help='VM image for job (name or ID)')
+    parser.add_argument('flavor',help='hardware flavor (name or ID)')
+    parser.add_argument('--jobscriptonvm', default=None,
+                        help='Execution script that already exists on VM')
+    parser.add_argument('--nopost',default=False,action='store_true',
+                        help='Share VM but do not actually POST to service')
+    parser.add_argument('--os-username',
+                        help='user name if OS_USERNAME not set')
+    parser.add_argument('--os-password',help='password if OS_PASSWORD not set')
+    parser.add_argument('--os-tenant-name',
+                        help='tenant name for image if OS_TENANT_NAME not set')
+    parser.add_argument('--os-auth-url',help='auth URL if OS_AUTH_URL not set')
 
     args=parser.parse_args()
     log_level = parser.get_log_level(args)
-    groupnames=args.groupnames
-    certfile=args.certfile
-    role=Role(args.role)
+    host=args.host
 
-    # Create a groups client and check for membership
-    is_member = False
+    jobfile = args.jobfile
+    image = args.image
+    flavor = args.flavor
+    jobscriptonvm = args.jobscriptonvm
+    nopost = args.nopost
+    anonymous = args.anonymous
+
+    # OpenStack auth parameters dict
+    auth = {'username': None,
+            'password': None,
+            'tenant_name': None,
+            'auth_url': None}
+    for key in auth:
+        argname = 'os_'+key
+        osvar = argname.upper()
+        if eval( 'args.'+argname ):
+            auth[key] = eval( 'args.'+argname )
+        elif osvar in os.environ:
+            auth[key] = os.environ[osvar]
+        else:
+            print "Neither --%s nor %s set in the environment" \
+                % (argname.replace('_','-'), osvar)
+            sys.exit(1)
+
+
     try:
-        c = GroupsClient(certfile, log_level=log_level)
-        group = c.get_group(groupnames)
-        is_member = c.is_member(groupnames,role=role)
-    except Exception as e:
-        print str(e)
+        # Create a proc client
+        c = ProcClient(auth, host=host, anonymous=anonymous,
+                       log_level=log_level)
+        c.logger.debug("Start")
+    except Exception as E:
+        traceback.print_exc()
+        print str(E)
         sys.exit(1)
 
-    print is_member
+    try:
+        # Submit a job for processing
+        c.submit_job(jobfile, image, flavor, jobscriptonvm=jobscriptonvm, \
+                         nopost=nopost)
+    except Exception as E:
+        c.logger.exception(str(E))
+        if isinstance(E, keystone_exceptions.Unauthorized):
+            c.logger.warning(
+                'Are your name, password, and tenant set correctly? ' + \
+                '(e.g., did you source a valid openrc file to set ' + \
+                'OS_* environment variables ?)')
+        sys.exit(1)
+
+
+    # Good exit status if we get here
+    c.logger.debug("End")
     sys.exit(0)

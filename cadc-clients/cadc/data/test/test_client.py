@@ -396,6 +396,70 @@ class TestClient(unittest.TestCase):
         mock_isfile.reset_mock()
 
 
+    @patch('os.path.isfile')           # fake loading cert
+    @patch('requests.Session.head')    # fake head request
+    def test_data_info_cert(self,mock_session_head, mock_isfile):
+
+        c = DataClient(certfile=test_cert, host=test_host)
+        self.assertTrue(c.is_authorized)
+
+        # a mocked response
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.headers = {'key': 'value'}
+        mock_response.history = [1]
+
+        # Head request when we have a cert
+        mock_session_head.return_value = mock_response
+        c.data_info(test_archive, test_localfile)
+
+        mock_session_head.assert_called_once_with(
+            'https://%s/data/pub/%s/%s' % (test_host, test_archive,
+                                           test_localfile), verify=False )
+
+        mock_session_head.reset_mock()
+        mock_isfile.reset_mock()
+
+        # We can also handle the anonymous case here
+
+        c = DataClient(host=test_host, anonymous=True)
+        self.assertFalse(c.is_authorized)
+
+        mock_session_head.return_value = mock_response
+        c.data_info(test_archive, test_localfile)
+
+        mock_session_head.assert_called_once_with(
+            'http://%s/data/pub/%s/%s' % (test_host, test_archive,
+                                          test_localfile), verify=False )
+
+        mock_session_head.reset_mock()
+        mock_isfile.reset_mock()
+
+
+    @patch('netrc.netrc.authenticators') # fake loading .netrc
+    @patch('requests.Session.head')      # fake head request
+    def test_data_info_netrc(self,mock_session_head, mock_authenticator):
+
+        c = DataClient(certfile=test_cert, host=test_host)
+        self.assertTrue(c.is_authorized)
+
+        # a mocked response
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.headers = {'key': 'value'}
+        mock_response.history = [1]
+
+        # Head request when we are using .netrc
+        mock_session_head.return_value = mock_response
+        c.data_info(test_archive, test_localfile)
+
+        mock_session_head.assert_called_once_with(
+            'http://%s/data/auth/%s/%s' % (test_host, test_archive,
+                                           test_localfile), verify=False )
+
+        mock_session_head.reset_mock()
+
+
 def run():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestClient)
     return unittest.TextTestRunner(verbosity=2).run(suite)

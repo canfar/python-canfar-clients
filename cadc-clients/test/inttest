@@ -1,0 +1,122 @@
+#!/bin/bash
+# Integration test for cadc-copy
+
+where=`which cadc-copy`
+if [[ "$?" != "0" ]]; then
+    echo "ERROR: Couldn't locate canfar-is-member"
+    exit 1
+else
+    echo "*** Testing $where ***"
+fi
+
+if [ -z $CADC_WEBSERVICE ]; then
+    CADC_WEBSERVICE="www.canfar.phys.uvic.ca"
+    echo "*** CADC_WEBSERVICE not defined. Setting to $CADC_WEBSERVICE ***"
+else
+    echo "*** using CADC_WEBSERVICE=$CADC_WEBSERVICE ***"
+fi
+
+if [ -z $CADCTESTCERTS ]; then
+    echo "CADCTESTCERTS not defined (set to \$A/test-certificates)"
+    exit 1
+fi
+
+testcert='x509_CADCAuthtest1.pem'
+
+if [ ! -e "$CADCTESTCERTS/$testcert" ]; then
+    echo "Couldn't find $CADCTESTCERTS/$testcert"
+    exit 1
+fi
+
+COPYCMD="cadc-copy --certfile=$CADCTESTCERTS/$testcert --host=$CADC_WEBSERVICE"
+ARCHIVE="TEST"
+TESTFILE="publicTest"
+
+# Create a test file and put it in the system
+rm ${TESTFILE}* 2> /dev/null
+rm foo 2> /dev/null
+echo "testfile" >> $TESTFILE
+MD5=`md5sum $TESTFILE`
+
+echo -n "put file into archive..."
+$COPYCMD put $ARCHIVE $TESTFILE
+[[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
+echo " [OK]"
+
+echo -n "put bogus file into archive..."
+$COPYCMD put $ARCHIVE foo 2> /dev/null
+[[ "$?" == "0" ]] && echo " cmd [FAIL]" && exit -1
+echo " [OK]"
+
+echo -n "anonymous put file into archive fails..."
+$COPYCMD put $ARCHIVE $TESTFILE --anonymous 2> /dev/null
+[[ "$?" == "0" ]] && echo " cmd [FAIL]" && exit -1
+echo " [OK]"
+
+echo -n "put file into archive, specify stream..."
+$COPYCMD put $ARCHIVE $TESTFILE --stream=default
+[[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
+echo " [OK]"
+
+echo -n "put file into archive, specify bogus stream..."
+$COPYCMD put $ARCHIVE $TESTFILE --stream=foo 2> /dev/null
+[[ "$?" == "0" ]] && echo " cmd [FAIL]" && exit -1
+echo " [OK]"
+
+echo -n "get file from archive..."
+$COPYCMD get $ARCHIVE $TESTFILE
+[[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
+newmd5=`md5sum $TESTFILE`
+[[ "$newmd5" != "$MD5" ]] && echo " md5 [FAIL]" && exit -1
+echo " [OK]"
+
+echo -n "anonymous get file from archive..."
+$COPYCMD get $ARCHIVE $TESTFILE --anonymous
+[[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
+newmd5=`md5sum $TESTFILE`
+[[ "$newmd5" != "$MD5" ]] && echo " md5 [FAIL]" && exit -1
+echo " [OK]"
+
+echo -n "get single file multiple times, multiple local file names..."
+$COPYCMD get $ARCHIVE "${TESTFILE}1 ${TESTFILE}2" \
+    --filename="$TESTFILE $TESTFILE"
+[[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
+for f in ${TESTFILE}1 ${TESTFILE}2; do
+    newmd5=`md5sum $TESTFILE`
+    [[ "$newmd5" != "$MD5" ]] && echo " md5 $f [FAIL]" && exit -1
+done
+echo " [OK]"
+
+echo -n "put multiple files into archive..."
+$COPYCMD put $ARCHIVE "${TESTFILE}1 ${TESTFILE}2"
+[[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
+echo " [OK]"
+
+echo -n "put multiple files into archive using wildcard..."
+$COPYCMD put $ARCHIVE "${TESTFILE}?"
+[[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
+echo " [OK]"
+
+echo -n "get multiple files..."
+$COPYCMD get $ARCHIVE "${TESTFILE}1 ${TESTFILE}2"
+[[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
+for f in ${TESTFILE}1 ${TESTFILE}2; do
+    newmd5=`md5sum $TESTFILE`
+    [[ "$newmd5" != "$MD5" ]] && echo " md5 $f [FAIL]" && exit -1
+done
+echo " [OK]"
+
+echo -n "get multiple files, first is bogus, all should fail..."
+$COPYCMD get $ARCHIVE "foo ${TESTFILE}2" 2> /dev/null
+[[ "$?" == "0" ]] && echo " cmd [FAIL]" && exit -1
+echo " [OK]"
+
+echo -n "get multiple files, first is bogus, ignore failures..."
+$COPYCMD get $ARCHIVE "foo ${TESTFILE}2" --ignorefailures 2> /dev/null
+[[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
+echo " [OK]"
+
+
+# cleanup
+rm ${TESTFILE}* 2> /dev/null
+rm foo 2> /dev/null

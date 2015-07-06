@@ -3,7 +3,7 @@
 # *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 # *
-# *  (c) 2014.                            (c) 2014.
+# *  (c) 2015.                            (c) 2015.
 # *  Government of Canada                 Gouvernement du Canada
 # *  National Research Council            Conseil national de recherches
 # *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -63,85 +63,3 @@
 # *                                       <http://www.gnu.org/licenses/>.
 # *
 # ************************************************************************
-
-# Python implementation of the GMS client. Only supports x509 as the
-# IDTYPE at present.
-
-import logging
-import os
-import exceptions
-from group_xml.group_reader import GroupReader
-from group_xml.group_writer import GroupWriter
-from canfar.common.client import BaseClient
-
-
-class GroupsClient(BaseClient):
-    """Class for interacting with the access control web service"""
-
-    def __init__(self, *args, **kwargs):
-        """GMS client constructor. The dn will be extracted from the
-        x509 cert and available as a default for user_id in other
-        method calls.
-
-        certfile -- Path to CADC proxy certificate
-        """
-
-        # This client does not support name/password authentication
-        super(GroupsClient, self).__init__(usenetrc=False, *args, **kwargs)
-
-        # Specific base_url for AC webservice
-        host = os.getenv('AC_WEBSERVICE_HOST', self.host)
-        path = os.getenv('AC_WEBSERVICE_PATH', '/ac')
-        self.base_url = '{}://{}{}'.format('https', host, path)
-        self.logger.info('Base URL {}'.format(self.base_url))
-
-        # This client will need the user DN
-        self.current_user_dn = self.get_current_user_dn()
-
-        # Specialized exceptions handled by this client
-        self._HTTP_STATUS_CODE_EXCEPTIONS[404] = {
-            "User": exceptions.UserNotFoundException(),
-            "Group": exceptions.GroupNotFoundException()
-            }
-        self._HTTP_STATUS_CODE_EXCEPTIONS[409] = \
-            exceptions.GroupExistsException()
-
-    def create_group(self, group):
-        """ Persist the given Group """
-        if group is None:
-            raise ValueError("Group cannot be None.")
-
-        url = self.base_url + "/groups"
-        writer = GroupWriter()
-        xml_string = writer.write(group)
-        self._upload_xml(url, xml_string, 'PUT')
-        self.logger.info('Created group {}'.format(group.group_id))
-
-    def get_group(self, group_id):
-
-        if group_id is None or group_id.strip() == '':
-            raise ValueError("Group ID cannot be None or empty.")
-
-        url = self.base_url + "/groups/" + group_id
-        xml_string = self._download_xml(url)
-        reader = GroupReader()
-        group = reader.read(xml_string)
-        self.logger.info('Retrieved group {}'.format(group.group_id))
-        return group
-
-    def update_group(self, group):
-        """
-            Persist the given Group
-        """
-        if group is None:
-            raise ValueError("Group cannot be None.")
-
-        url = self.base_url + "/groups/" + group.group_id
-        writer = GroupWriter()
-        xml_string = writer.write(group)
-        self._upload_xml(url, xml_string, 'POST')
-        self.logger.info('Updated group {}'.format(group.group_id))
-
-    def _make_logger(self):
-        """ Logger for gmsclient """
-        self.logger = logging.getLogger('gmsclient')

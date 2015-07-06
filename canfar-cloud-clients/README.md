@@ -1,5 +1,5 @@
-# canfar
-This Python package provides client libraries and command-line utilities for interacting with [CANFAR](http://www.canfar.phys.uvic.ca/) web services.
+# canfar-cloud
+This Python package extends the **canfar** package by providing client libraries and command-line utilities for interacting with [CANFAR](http://www.canfar.phys.uvic.ca/) services that depend on external OpenStack cloud providers. It is packaged separately due to the significantly larger external dependencies on [OpenStack](https://www.openstack.org/).
 
 ## Installation
 The `requirements.txt` file can be used to install all necessary dependencies globally:
@@ -24,32 +24,16 @@ $ python setup.py install --help
 for additional options (e.g., `--prefix`, `--install-scripts`)
 
 ## Usage
-The command-line client scripts provided by this repo generally authenticate automatically using:
+The command-line client scripts provided by this package communicate both with OpenStack and CANFAR web servers. At present, the authentication systems have not been fully integrated, and it is assumed that a CANFAR user with username `jane` will have a mirror OpenStack account with username `jane-canfar`, and the same password in both cases. Rather than using the certificate or `.netrc` style of authentication as for other CANFAR clients, these scripts follow the OpenStack convention of specifying: (i) name; (ii) password; (iii) tenant name; and (iv) OpenStack auth service URL, typically by sourcing an [OpenStack RC File](http://www.canfar.net/docs/cli/#setup-the-environment), or specifying their values directly on the command-line.
 
-1. a proxy certificate in the default location `$HOME/.ssl/cadcproxy.pem` **OR**
-2. username/password stored in `$HOME/.netrc` with an entry like:
-        `machine www.canfar.phys.uvic.ca login [username] [password]`
+### Submit batch job to the proc service
 
-If neither a proxy certificate nor an entry in `.netrc` can be found, an anonymous connection is used.
-
-This behaviour may be overriden by specifying an alternative proxy certificate location (`--certfile=[location]`), or forcing an anonymous connection (`--anonymous`).
-
-For further help on the usage of the following clients, use the `--help` option.
-
-### CANFAR groups service
-To check whether the identity of a user stored in their certificate is a member of a CANFAR group (presently name/password authentication is not supported for this service):
 ```
-$ canfar-is-member groupname
+$ canfar-submit-job job.sub vm_image p1-1.5gb
 ```
 
-Groups can also be created:
-```
-$ canfar-create-group groupname
-```
-and queried:
-```
-$ canfar-get-group groupname
-```
+See the [CANFAR batch documentation](http://www.canfar.net/docs/batch/) for further details.
+
 
 ## Development
 A virtual environment (**venv**) is recommended to set up external dependencies without installing them system-wide. Following [these instructions](http://docs.python-guide.org/en/latest/dev/virtualenvs/), install **virtualenv**:
@@ -77,7 +61,7 @@ $ python setup.py install
 ```
 You should then be able to run them, e.g.:
 ```
-$ canfar-is-member --help
+$ canfar-submit-job --help
 ```
 
 Each time you resume work on the project and want to use the **venv** (e.g., from a new shell), simply re-activate it:
@@ -95,7 +79,7 @@ The top-level `rununittests` executes all of the unit tests in `canfar/<package>
 
 Alternatively, during development, individual tests may be executed from the appropriate directory, e.g.:
 ```
-$ cd canfar/groups/test
+$ cd canfar/proc/test
 $ python test_client.py
 ```
 or with additional options to calculate coverage:
@@ -104,8 +88,5 @@ $ python -m trace --count -s -m --ignore-dir=${VIRTUAL_ENV}:/usr test_client.py
 ```
 
 ### Integration Tests
-The integration tests are, at present, designed to run only at CADC. For this to work, you will probably want to do the following:
 
-1. Set the environment variable `$CADC_ROOT` to the path where CADC software are installed.
-2. Install the clients (to the venv) using `$ python setup.py install`
-3. `$ test/inttest`
+Presently there is only a minimal test stub in `test/inttest`.

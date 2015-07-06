@@ -29,7 +29,7 @@
 # *   Script Name:       setup.py
 # *
 # *   Purpose:
-# *      Distutils setup script for CADC Python clients
+# *      Distutils setup script for CANFAR Cloud Python clients
 # *
 # *   Functions:
 # *
@@ -40,14 +40,14 @@
 # -*/
 
 # Use "distribute"
-from cadc.__version__ import version
+from canfar.__version__ import version
 import os
 from setuptools import setup, find_packages
 import sys
 
 
 if sys.version_info[0] > 2:
-    print 'The CADC package is only compatible with Python version 2.n'
+    print 'The CANFAR package is only compatible with Python version 2.n'
     sys.exit(-1)
 
 # Build the list of scripts to be installed.
@@ -58,16 +58,17 @@ for script in os.listdir(script_dir):
         continue
     scripts.append(os.path.join(script_dir, script))
 
-setup(name='cadc',
+setup(name='canfarcloud',
       version=version,
-      description='CADC Python Clients',
+      description='CANFAR Cloud Python Clients',
       url='https://github.com/canfar/python-canfar-clients',
       author='Ed Chapin, Jeff Burke, Dustin Jenkins',
       author_email='cadc@nrc.ca',
       license='GNU Affero General Public License v3.0',
-      long_description='Python client libraries and scripts for CADC web services',
+      long_description='Python client libraries and scripts for CANFAR cloud services',
       packages=find_packages(),
       scripts=scripts,
-      provides=['cadc'],
+      provides=['canfarcloud'],
       zip_safe=False,
-      requires=['lxml', 'canfar'])
+      namespace_packages = ['canfar'],
+      requires=['pyOpenSSL', 'lxml', 'requests', 'canfar'])

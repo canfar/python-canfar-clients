@@ -64,6 +64,7 @@
 # *
 # ************************************************************************
 
+import logging
 import netrc
 import os
 from argparse import ArgumentParser
@@ -90,7 +91,8 @@ class BaseParser(ArgumentParser):
         self.add_argument('--anonymous', action="store_true", default=False,
                           help='Force anonymous connection')
         self.add_argument('--host', help="Base hostname for services"
-                          + "(default=www.canfar.phys.uvic.ca")
+                          + "(default=www.canfar.phys.uvic.ca",
+                          default='www.canfar.phys.uvic.ca')
         self.add_argument('--verbose', action="store_true", default=False,
                           help='verbose messages')
         self.add_argument('--debug', action="store_true", default=False,
@@ -102,3 +104,11 @@ class BaseParser(ArgumentParser):
             self.add_argument('--version', action='version',
                               version=version)
 
+    def get_log_level(self, args):
+        """ Obtain a single logger level from parsed args """
+
+        log_level = ((args.debug and logging.DEBUG) or
+                     (args.verbose and logging.INFO) or
+                     (args.quiet and logging.FATAL) or logging.ERROR)
+
+        return log_level

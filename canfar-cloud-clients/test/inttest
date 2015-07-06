@@ -1,0 +1,13 @@
+#!/bin/bash
+# Integration test for canfar-submit-job
+
+# This is just a placeholder that runs the script with --help.
+# What we really need to do is create an image on-the-fly in the
+# OpenStack cloud, and try real job submissions.
+
+JOBCMD="canfar-submit-job"
+
+echo -n "get help..."
+$JOBCMD --help
+[[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
+echo " [OK]"

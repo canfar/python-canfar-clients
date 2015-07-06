@@ -111,22 +111,26 @@ class BaseClient(object):
     """Base class for interacting with CADC services"""
 
     def __init__(self, certfile=None, anonymous=False, usenetrc=True,
-                 host='www.canfar.phys.uvic.ca'):
+                 basic_auth=None, host='www.canfar.phys.uvic.ca',
+                 log_level=logging.ERROR):
         """
         Client constructor
 
         certfile  -- Path to CADC proxy certificate
         anonymous -- Force anonymous client, regardless of cert/.netrc
         usenetrc  -- Try to use name/password authentication?
+        basic_auth-- An externally created HTTPBasicAuth object
         host      -- Override default service host
+        log_level -- How verbose should the client's logger be
         """
 
         self._make_logger()
+        self.setup_logger(log_level=log_level)
         self.host = host
 
         # Unless the caller specifically requests an anonymous client,
-        # check first for a certificate, and then a name+password in
-        # .netrc.
+        # check first for a certificate, then an externally created
+        # HTTPBasicAuth object, and finally a name+password in .netrc.
         self.is_authorized = False
         self.certificate_file_location = None
         self.basic_auth = None
@@ -140,18 +144,27 @@ class BaseClient(object):
                     print "Unable to open supplied certfile '%s':" % certfile +\
                         " Ignoring."
 
-            if not self.is_authorized and usenetrc:
-                try:
-                    auth = netrc.netrc().authenticators(self.host)
-                    username=auth[0]
-                    password=auth[2]
-
-                    self.basic_auth = HTTPBasicAuth(username, password)
+            if not self.is_authorized:
+                if basic_auth is not None:
+                    self.basic_auth = basic_auth
                     self.is_authorized = True
-                except:
-                    # .netrc check happens automatically, so no need for
-                    # a message if it fails
-                    pass
+                elif usenetrc:
+                    try:
+                        auth = netrc.netrc().authenticators(self.host)
+                        username=auth[0]
+                        password=auth[2]
+
+                        self.basic_auth = HTTPBasicAuth(username, password)
+                        self.is_authorized = True
+                    except:
+                        # .netrc check happens automatically, so no need for
+                        # a message if it fails
+                        pass
+
+        self.logger.debug(
+            "Client authorized: %s, certfile: %s, name/password: %s" % \
+                (str(self.is_authorized), str(self.certificate_file_location),
+                 str(self.basic_auth is not None)) )
 
         # Create a session
         self._create_session()
@@ -186,7 +199,7 @@ class BaseClient(object):
     def get_current_user_dn(self):
         """ Obtain user distinguished name from client's certificate """
 
-        if self.certificate_file_location is not None:
+        if self.certificate_file_location is None:
             raise ValueError(
                 'Unable to extract user DN because no cert provided')
 
@@ -206,10 +219,29 @@ class BaseClient(object):
             x509_dn = ""
             for part in x509.get_issuer().get_components():
                 x509_dn = x509_dn + '='.join(part) + ','
+            x509_dn = x509_dn.rstrip(',')
+            self.logger.debug('Read X509 dn: %s' % x509_dn)
             return x509_dn.rstrip(',')
         except crypto.Error, e:
             self.logger.error('Failed to parse certfile: {}'.format(str(e)))
             raise
+
+    def _post(self, *args, **kwargs):
+        """Wrapper for POST so that we use this client's session"""
+        return self.session.post(*args, **kwargs)
+
+    def _put(self, *args, **kwargs):
+        """Wrapper for PUT so that we use this client's session"""
+        return self.session.put(*args, **kwargs)
+
+    def _get(self, *args, **kwargs):
+        """Wrapper for GET so that we use this client's session"""
+        return self.session.get(*args, **kwargs)
+
+    def _head(self, *args, **kwargs):
+        """Wrapper for HEAD so that we use this client's session"""
+        return self.session.head(*args, **kwargs)
+
 
     def _upload_xml(self, url, xml_string, method, headers=None):
         """ PUT or POST XML string to URL, return the response object
@@ -230,11 +262,11 @@ class BaseClient(object):
         local_headers['content-type'] = 'text/xml'
 
         if method == 'PUT':
-            response = self.session.put(url, data=xml_string, verify=False,
-                                        headers=local_headers)
+            response = self._put(url, data=xml_string, verify=False,
+                                 headers=local_headers)
         elif method == 'POST':
-            response = self.session.post(url, data=xml_string, json=None,
-                                         verify=False, headers=local_headers)
+            response = self._post(url, data=xml_string, json=None, verify=False,
+                                 headers=local_headers)
         else:
             raise ValueError('Method must be PUT or POST')
 
@@ -246,7 +278,7 @@ class BaseClient(object):
         """ GET XML string from URL """
         self.logger.debug('Requesting XML: %s' % url)
 
-        response = self.session.get(url, verify=False)
+        response = self._get(url, verify=False)
         self.check_exception(response)
         xml_string = response.text
         xml_string = xml_string.encode('utf-8')
@@ -254,6 +286,13 @@ class BaseClient(object):
         self.logger.debug('Retrieved XML string:\n%s' % xml_string)
 
         return xml_string
+
+    def _head_request(self, url):
+        """ Perform a HEAD request on URL and return response """
+        response = self._head(url, verify=False)
+        self.check_exception(response)
+
+        return response
 
     def _create_session(self):
         self.logger.debug('Creating session.')
@@ -264,7 +303,6 @@ class BaseClient(object):
         # are provided.
         self.session = requests.Session()
         self.session.auth = self.basic_auth
-
         if self.certificate_file_location is not None:
             self.session.mount('https://',
                                SSLAdapter(_SSL_VERSION,
@@ -275,13 +313,10 @@ class BaseClient(object):
         """ Override to initialize loggers for different clients """
         self.logger = logging.getLogger('cadcclient')
 
-    def get_logger(self, verbose=True, debug=False, quiet=False):
-        """ Set up and return logger. Default to ERROR level. """
+    def setup_logger(self, log_level=logging.ERROR):
+        """ Setup logger. Default to ERROR level. """
 
         log_format = "%(module)s: %(levelname)s: %(message)s"
-
-        log_level = ((debug and logging.DEBUG) or (verbose and logging.INFO) or
-                     (quiet and logging.FATAL) or logging.ERROR)
 
         if log_level == logging.DEBUG:
             log_format = "%(levelname)s: @(%(asctime)s) - " \
@@ -291,7 +326,6 @@ class BaseClient(object):
         stream_handler = logging.StreamHandler()
         stream_handler.setFormatter(logging.Formatter(fmt=log_format))
         self.logger.addHandler(stream_handler)
-        return self.logger
 
     def check_exception(self, response):
         """

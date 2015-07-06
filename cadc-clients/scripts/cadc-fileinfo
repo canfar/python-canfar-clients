@@ -65,45 +65,55 @@
 #
 # ***********************************************************************
 
-"""Given an x509 cert determine if a user is a member of at least one
-of a list of groups"""
+"""Get information about a file in the CADC storage system."""
 
-from canfar.groups.client import GroupsClient
-from canfar.groups.role import Role
-from canfar.__version__ import version
+from cadc.__version__ import version
+from cadc.data.client import DataClient
 from canfar.common.parser import BaseParser
+from argparse import RawDescriptionHelpFormatter
 import sys
-
-description = "Determine whether a user (identified by CADC proxy cert) is a member of any of a set of groups"
+import logging
+import glob
+description = "Get information about a file in the CADC storage system."
 
 if __name__=='__main__':
 
     # Parse the command line
-    parser = BaseParser(description=description,version=version)
-    parser.add_argument('groupnames', metavar='groupname',
-                        type=str, nargs='+',
-                        help="list of group names in which to check membership")
-
-    parser.add_argument('--role',
-                        help="type of role: %s (default=member)" \
-                            % " ".join(Role.allowable_roles),
-                        default='member')
+    parser = BaseParser(description=description, version=version,
+                        formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('archive', help='Archive name')
+    parser.add_argument('filename', help='File name in archive')
 
     args=parser.parse_args()
     log_level = parser.get_log_level(args)
-    groupnames=args.groupnames
     certfile=args.certfile
-    role=Role(args.role)
+    host=args.host
+    anonymous=args.anonymous
+    archive = args.archive
+    filename = args.filename
 
-    # Create a groups client and check for membership
-    is_member = False
+    # Create a data client
     try:
-        c = GroupsClient(certfile, log_level=log_level)
-        group = c.get_group(groupnames)
-        is_member = c.is_member(groupnames,role=role)
+        # Schema validation is slow due to large initial overhead (~1.5s) ?
+        c = DataClient(certfile=certfile, schema_validate=False,
+                       host=host, anonymous=anonymous, log_level=log_level)
+        c.logger.debug("Start")
     except Exception as e:
         print str(e)
         sys.exit(1)
 
-    print is_member
+    # Check file
+    try:
+        r = c.data_info(archive,filename)
+    except Exception as e:
+        print str(e)
+        sys.exit(1)
+
+    # Display header values unless --quiet
+    if log_level < logging.FATAL:
+        for k in r.headers:
+            print '%s=%s' % (k, r.headers[k])
+
+    # Good exit status if we get here
+    c.logger.debug("End")
     sys.exit(0)
