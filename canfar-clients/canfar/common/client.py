@@ -102,7 +102,7 @@ class SSLAdapter(HTTPAdapter):
 
     def init_poolmanager(self, connections, maxsize, block=False, **kwargs):
         if self.logger is not None:
-            self.logger.debug("Connecting using {}".format(self.cert))
+            self.logger.debug("Connecting using " + self.cert)
 
         self.poolmanager = PoolManager(num_pools=connections,
                                        maxsize=maxsize,
@@ -208,14 +208,14 @@ class BaseClient(object):
                 'Unable to extract user DN because no cert provided')
 
         # Get the dn from the x509 cert
-        self.logger.debug('Read dn from x509 cert {}'
-                     .format(self.certificate_file_location))
+        self.logger.debug('Read dn from x509 cert ' + \
+                              self.certificate_file_location)
         try:
             f = open(self.certificate_file_location, "r")
             certfile_data = f.read()
             f.close()
         except IOError, e:
-            self.logger.error('Failed to read certfile: {}'.format(str(e)))
+            self.logger.error('Failed to read certfile: ' + str(e))
             raise
 
         try:
@@ -227,7 +227,7 @@ class BaseClient(object):
             self.logger.debug('Read X509 dn: %s' % x509_dn)
             return x509_dn.rstrip(',')
         except crypto.Error, e:
-            self.logger.error('Failed to parse certfile: {}'.format(str(e)))
+            self.logger.error('Failed to parse certfile: ' + str(e))
             raise
 
     def _post(self, *args, **kwargs):

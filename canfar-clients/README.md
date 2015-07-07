@@ -7,7 +7,7 @@ The `requirements.txt` file can be used to install all necessary dependencies gl
 $ sudo pip install -r requirements.txt
 ```
 
-Or to upgrade.
+Or to upgrade (this may be required if you see errors like `ImportError: No module named packages.urllib3.poolmanager`).
 ```
 $ sudo pip install --upgrade -r requirements.txt
 ```
@@ -17,6 +17,11 @@ If **pip** fails, you may need to install other missing system dependencies befo
 For example, with Ubuntu 14.04:
 ```
 $ sudo apt-get install python-pip libssl-dev libffi-dev libxml2-dev libxslt1-dev python-dev
+```
+
+With CentOS 6.5:
+```
+$ sudo yum install gcc python-pip openssl-devel libffi-devel libxslt-devel python-devel
 ```
 
 After that, to install this project globally:

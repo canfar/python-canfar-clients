@@ -80,7 +80,7 @@ class RoleError(Exception):
 class Role:
     """Helper class for constraining allowable roles"""
 
-    allowable_roles = {'owner', 'member', 'admin'}
+    allowable_roles = set(['owner', 'member', 'admin'])
 
     def __init__(self, role_name):
         name_lower = role_name.lower()

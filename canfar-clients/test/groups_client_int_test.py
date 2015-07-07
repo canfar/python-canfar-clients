@@ -32,7 +32,7 @@ class GroupsClientIntTest(unittest.TestCase):
         os.environ['AC_WEBSERVICE_HOST'] = self.host
 
     def get_group_id(self, name):
-        return 'ALLOW-TEST-ac_ws-inttest-{}-{}'.format(name, uuid.uuid4())
+        return 'ALLOW-TEST-ac_ws-inttest-%s-%s' % (name, uuid.uuid4())
 
     def test_groups_client(self):
         self.init()
@@ -47,18 +47,18 @@ class GroupsClientIntTest(unittest.TestCase):
         # create a group
         expected = Group(self.get_group_id('py1'), owner)
         expected.description = 'group description'
-        print 'expected group {}'.format(expected)
+        print 'expected group ' + expected
 
         try:
             client.create_group(expected)
         except Exception, e:
-            self.fail('Error creating group because {}'.format(repr(e)))
+            self.fail('Error creating group because ' + repr(e))
 
         # get the group
         try:
             actual = client.get_group(expected.group_id)
         except Exception, e:
-            self.fail('Error getting group because {}'.format(repr(e)))
+            self.fail('Error getting group because ' + repr(e))
 
         self.assertEqual(actual.group_id, expected.group_id, 'group_ids do not match')
         self.assertEqual(actual.description, expected.description, 'descriptions do not match')
@@ -74,8 +74,8 @@ class GroupsClientIntTest(unittest.TestCase):
         try:
             client.create_group(group_member)
         except Exception, e:
-            self.fail('Error creating group because {}'.format(repr(e)))
-        print 'group member {}'.format(group_member)
+            self.fail('Error creating group because ' + repr(e))
+        print 'group member ' + group_member
 
         expected.group_members.add(group_member)
         expected.group_admins.add(group_member)
@@ -84,7 +84,7 @@ class GroupsClientIntTest(unittest.TestCase):
             client.update_group(expected)
             actual = client.get_group(expected.group_id)
         except Exception, e:
-            # self.fail('Error getting group because {}'.format(repr(e)))
+            # self.fail('Error getting group because ' + repr(e))
             raise
 
         self.assertEqual(actual.group_id, expected.group_id, 'group_ids do not match')

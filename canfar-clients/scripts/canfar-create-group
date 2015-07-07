@@ -112,12 +112,12 @@ if __name__ == '__main__':
         print str(ve)
         sys.exit(-1)
     except UserNotFoundException:
-        logger.error("Unable to PUT new group. User '{}' not found."
-                     .format(c.get_current_user_dn()))
+        logger.error("Unable to PUT new group. User '%s' not found." % \
+                         c.get_current_user_dn())
         sys.exit(-1)
     except GroupExistsException:
-        logger.info("Unable to PUT new group. Group '{}' already exists."
-                    .format(groupname))
+        logger.info("Unable to PUT new group. Group '%s' already exists." % \
+                        format(groupname))
 
         # If a user was given for an existing group,
         # add user as an admin user
@@ -134,8 +134,8 @@ if __name__ == '__main__':
                 c.update_group(group)
                 sys.exit(0)
             except UserNotFoundException:
-                logger.error("Unable to update existing group. User admin '{}' not found."
-                             .format(current_user.user_id))
-                sys.exit(-1)
+                logger.error("Unable to update existing group. " + \
+                                 "User admin '%s' not found." % \
+                                 current_user.user_id)
         else:
             sys.exit(-1)
