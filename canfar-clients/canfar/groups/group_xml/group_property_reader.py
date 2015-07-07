@@ -87,7 +87,7 @@ class GroupPropertyReader(object):
             raise ValueError('property element is None')
 
         if not property_element.tag == 'property':
-            raise ValueError('expected property element, found {}'.format(property_element.tag))
+            raise ValueError('expected property element, found ' + property_element.tag)
 
         try:
             key = property_element.get('key')
@@ -103,7 +103,7 @@ class GroupPropertyReader(object):
         elif type_attrib == GroupProperty.INTEGER_TYPE:
             value = str(property_element.text)
         else:
-            raise ValueError('Unsupported GroupProperty type {}'.format(type_attrib))
+            raise ValueError('Unsupported GroupProperty type ' + type_attrib)
 
         read_only_attrib = property_element.get('readOnly')
         if read_only_attrib is not None and read_only_attrib == 'true':

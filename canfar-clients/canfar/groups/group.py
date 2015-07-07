@@ -78,8 +78,7 @@ class Group(object):
         """
         group_id_re = re.compile('^[a-zA-Z0-9\\-\\.~_]*$')
         if not group_id_re.match(group_id):
-            raise Exception('Invalid group ID {} may not contain space ( ), slash (/), escape (\), or percent (%)'
-                            .format(group_id_re))
+            raise Exception('Invalid group ID %s may not contain space ( ), slash (/), escape (\), or percent (%)' % group_id_re)
 
         self.group_id = group_id
         self.owner = owner
@@ -105,4 +104,4 @@ class Group(object):
         return hash(self.group_id)
 
     def __repr__(self):
-        return '{}'.format(self.group_id)
+        return self.group_id

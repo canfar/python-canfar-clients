@@ -92,6 +92,6 @@ class GroupPropertyWriter(object):
         elif isinstance(group_property.value, int):
             property_element.set('type', GroupProperty.INTEGER_TYPE)
         else:
-            raise ValueError('Unsupported value type {}'.format(type(group_property.value)))
+            raise ValueError('Unsupported value type ' + group_property.value)
 
         return property_element

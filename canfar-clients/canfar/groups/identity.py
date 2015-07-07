@@ -76,7 +76,7 @@ class Identity(object):
         if name is None or not name:
             raise ValueError('Identity name is None or empty')
         if identity_type not in self.identity_types:
-            raise ValueError('Unknown Identity type {}'.format(type))
+            raise ValueError('Unknown Identity type ' + type)
         self.name = name
         self.type = identity_type
 
@@ -87,4 +87,4 @@ class Identity(object):
         return hash((self.name, self.type))
 
     def __repr__(self):
-        return '{} {}'.format(self.name, self.type)
+        return '%s %s' % (self.name, self.type)

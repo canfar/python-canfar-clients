@@ -95,7 +95,7 @@ class GroupReader(object):
             raise GroupParsingException("group missing required uri attribute")
         if string.find(uri, GROUP_URI) != 0:
             raise GroupParsingException(
-                "group uri attribute malformed: {}".format(uri))
+                "group uri attribute malformed: " + uri)
 
         group_id = uri[len(GROUP_URI):]
         owner = self._get_owner(group_element)

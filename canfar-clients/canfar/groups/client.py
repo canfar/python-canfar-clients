@@ -92,8 +92,8 @@ class GroupsClient(BaseClient):
         # Specific base_url for AC webservice
         host = os.getenv('AC_WEBSERVICE_HOST', self.host)
         path = os.getenv('AC_WEBSERVICE_PATH', '/ac')
-        self.base_url = '{}://{}{}'.format('https', host, path)
-        self.logger.info('Base URL {}'.format(self.base_url))
+        self.base_url = '%s://%s%s' % ('https', host, path)
+        self.logger.info('Base URL ' + self.base_url)
 
         # This client will need the user DN
         self.current_user_dn = self.get_current_user_dn()
@@ -115,7 +115,7 @@ class GroupsClient(BaseClient):
         writer = GroupWriter()
         xml_string = writer.write(group)
         self._upload_xml(url, xml_string, 'PUT')
-        self.logger.info('Created group {}'.format(group.group_id))
+        self.logger.info('Created group ' + group.group_id)
 
     def get_group(self, group_id):
 
@@ -126,7 +126,7 @@ class GroupsClient(BaseClient):
         xml_string = self._download_xml(url)
         reader = GroupReader()
         group = reader.read(xml_string)
-        self.logger.info('Retrieved group {}'.format(group.group_id))
+        self.logger.info('Retrieved group ' + group.group_id)
         return group
 
     def update_group(self, group):
@@ -140,7 +140,7 @@ class GroupsClient(BaseClient):
         writer = GroupWriter()
         xml_string = writer.write(group)
         self._upload_xml(url, xml_string, 'POST')
-        self.logger.info('Updated group {}'.format(group.group_id))
+        self.logger.info('Updated group ' + group.group_id)
 
     def _make_logger(self):
         """ Logger for gmsclient """

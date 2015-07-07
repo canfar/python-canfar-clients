@@ -91,4 +91,4 @@ class GroupProperty(object):
         return hash((self.key, self.value))
 
     def __repr__(self):
-        return '{} {} {}'.format(self.key, self.value, self.read_only)
+        return '%s %s %s' % (self.key, self.value, self.read_only)
