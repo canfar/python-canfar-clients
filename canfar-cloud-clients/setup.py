@@ -71,4 +71,6 @@ setup(name='canfarcloud',
       provides=['canfarcloud'],
       zip_safe=False,
       namespace_packages = ['canfar'],
-      install_requires=['pyOpenSSL', 'lxml', 'requests', 'canfar'])
+      install_requires=['pyOpenSSL', 'lxml', 'requests', 'canfar',
+                        'python-keystoneclient', 'python-novaclient',
+                        'python-glanceclient'])

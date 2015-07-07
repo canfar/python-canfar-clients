@@ -19,7 +19,7 @@ For example, with Ubuntu 14.04:
 $ sudo apt-get install python-pip python-dev
 ```
 
-With CentOS 6.5:
+With CentOS 6.5 / 7:
 ```
 $ sudo yum install gcc python-pip python-devel
 ```

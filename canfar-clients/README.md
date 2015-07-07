@@ -19,7 +19,7 @@ For example, with Ubuntu 14.04:
 $ sudo apt-get install python-pip libssl-dev libffi-dev libxml2-dev libxslt1-dev python-dev
 ```
 
-With CentOS 6.5:
+With CentOS 6.5 / 7:
 ```
 $ sudo yum install gcc python-pip openssl-devel libffi-devel libxslt-devel python-devel
 ```
