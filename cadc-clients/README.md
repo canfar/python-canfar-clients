@@ -16,7 +16,7 @@ If **pip** fails, you may need to install other missing system dependencies befo
 
 For example, with Ubuntu 14.04:
 ```
-$ sudo apt-get install python-pip python-dev
+$ sudo apt-get install python-pip libssl-dev libffi-dev libxml2-dev libxslt1-dev python-dev
 ```
 
 With CentOS 6.5 / 7:

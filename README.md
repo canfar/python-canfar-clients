@@ -55,6 +55,18 @@ $ python setup.py install
 $ cd ..
 ```
 
+If **pip** fails, you may need to install other missing system dependencies before trying again.
+
+For example, with Ubuntu 14.04:
+```
+$ sudo apt-get install python-pip libssl-dev libffi-dev libxml2-dev libxslt1-dev python-dev
+```
+
+With CentOS 6.5 / 7:
+```
+$ sudo yum install gcc python-pip openssl-devel libffi-devel libxslt-devel python-devel
+```
+
 Finally, install any remaining external dependencies for `cadc-clients` and
 develop/install it in the **venv** as well:
 ```
@@ -70,4 +82,29 @@ $ pip install -r canfar-cloud-clients/requirements.txt
 $ cd canfar-cloud-clients
 $ python setup.py instal
 $ cd ..
+```
+
+## Releases to PyPI
+Stable releases of these packages are provided through [PyPI](https://pypi.python.org/pypi). It should therefore be possible to install any package using:
+```
+$ pip install canfar
+$ pip install cadc
+$ pip install canfarcloud
+```
+and **pip** will resolve and install dependencies. Again, note that if **pip** fails you probably need to install additional system dependencies as described above.
+
+If you see errors when using applications, particularly things like `ImportError: No module named packages.urllib3.poolmanager` use the **pip** option `--upgrade` to ensure that the dependencies are upgraded to their latest versions.
+
+In order to create a new release on **PyPI**, enter the package directory where `setup.py` resides. Increment the version number (`canfar/__version__.py` is shared by `canfar-clients/` and `canfar-cloud-clients/`, and `cadc/__version__.py` for `cadc-clients/`). Then, issue the following commands:
+```
+$ python setup.py register -r pypi
+$ python setup.py sdist upload -r pypi
+```
+
+These instructions assume you have an account on `PyPI` and an associated `~/.pypirc` with your name and password, and permission to update the package. [This page](http://peterdowns.com/posts/first-time-with-pypi.html) is a useful reference.
+
+Once you have created a release, create and push a new tag in the git repository.
+```
+$ git tag canfar-0.2.2
+$ git push --tags
 ```

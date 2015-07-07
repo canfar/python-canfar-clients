@@ -16,12 +16,12 @@ If **pip** fails, you may need to install other missing system dependencies befo
 
 For example, with Ubuntu 14.04:
 ```
-$ sudo apt-get install python-pip python-dev
+$ sudo apt-get install python-pip libssl-dev libffi-dev libxml2-dev libxslt1-dev python-dev
 ```
 
 With CentOS 7:
 ```
-$ sudo yum install gcc python-pip python-devel
+$ sudo yum install gcc python-pip openssl-devel libffi-devel libxslt-devel python-devel
 ```
 
 After that, to install this project globally:
