@@ -46,8 +46,8 @@ from setuptools import setup, find_packages
 import sys
 
 
-if sys.version_info[0] > 2:
-    print 'The CANFAR package is only compatible with Python version 2.n'
+if sys.version_info[0] > 2 or sys.version_info[1] < 7:
+    print 'The canfarcloud package is only compatible with Python versions 2.x >= 2.7'
     sys.exit(-1)
 
 # Build the list of scripts to be installed.

@@ -19,6 +19,11 @@ For example, with Ubuntu 14.04:
 $ sudo apt-get install python-pip python-dev
 ```
 
+With CentOS 6.5:
+```
+$ sudo yum install gcc python-pip python-devel
+```
+
 After that, to install this project globally:
 ```
 $ python setup.py install
