@@ -12,6 +12,13 @@ Or to upgrade.
 $ pip install --upgrade -r requirements.txt
 ```
 
+If **pip** fails, you may need to install other missing system dependencies before trying again.
+
+For example, with Ubuntu 14.04:
+```
+$ sudo apt-get install libssl-dev libffi-dev libxml2-dev libxslt1-dev python-dev
+```
+
 After that, to install this project:
 ```
 $ python setup.py install

@@ -60,15 +60,15 @@ for script in os.listdir(script_dir):
 
 setup(name='canfarcloud',
       version=version,
-      description='CANFAR Cloud Python Clients',
+      description='Python client libraries and scripts for CANFAR OpenStack cloud services',
       url='https://github.com/canfar/python-canfar-clients',
       author='Ed Chapin, Jeff Burke, Dustin Jenkins',
       author_email='cadc@nrc.ca',
       license='GNU Affero General Public License v3.0',
-      long_description='Python client libraries and scripts for CANFAR cloud services',
+      long_description='Clients for interacting with web services hosted by the Canadian Advanced Network for Astronomical Research that interact with OpenStack clouds',
       packages=find_packages(),
       scripts=scripts,
       provides=['canfarcloud'],
       zip_safe=False,
       namespace_packages = ['canfar'],
-      requires=['pyOpenSSL', 'lxml', 'requests', 'canfar'])
+      install_requires=['pyOpenSSL', 'lxml', 'requests', 'canfar'])

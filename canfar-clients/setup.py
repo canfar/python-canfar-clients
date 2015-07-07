@@ -60,15 +60,15 @@ for script in os.listdir(script_dir):
 
 setup(name='canfar',
       version=version,
-      description='CANFAR Python Clients',
+      description='Python client libraries and scripts for CANFAR web services',
       url='https://github.com/canfar/python-canfar-clients',
       author='Ed Chapin, Jeff Burke, Dustin Jenkins',
       author_email='cadc@nrc.gc.ca',
       license='GNU Affero General Public License v3.0',
-      long_description='Python client libraries and scripts for CANFAR web services',
+      long_description='Clients for interacting with web services hosted by the Canadian Advanced Network for Astronomical Research',
       packages=find_packages(),
       scripts=scripts,
       provides=['canfar'],
       zip_safe=False,
       namespace_packages = ['canfar'],
-      requires=['pyOpenSSL', 'lxml', 'requests'])
+      install_requires=['cryptography','pyOpenSSL', 'lxml', 'requests'])
