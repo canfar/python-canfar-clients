@@ -40,7 +40,7 @@
 # -*/
 
 # Use "distribute"
-from canfar.__version__ import version
+from canfar.__canfarcloud_version__ import version
 import os
 from setuptools import setup, find_packages
 import sys

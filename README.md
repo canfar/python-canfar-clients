@@ -95,7 +95,7 @@ and **pip** will resolve and install dependencies. Again, note that if **pip** f
 
 If you see errors when using applications, particularly things like `ImportError: No module named packages.urllib3.poolmanager` use the **pip** option `--upgrade` to ensure that the dependencies are upgraded to their latest versions.
 
-In order to create a new release on **PyPI**, enter the package directory where `setup.py` resides. Increment the version number (`canfar/__version__.py` is shared by `canfar-clients/` and `canfar-cloud-clients/`, and `cadc/__version__.py` for `cadc-clients/`). Then, issue the following commands:
+In order to create a new release on **PyPI**, enter the package directory where `setup.py` resides. Increment the version number used by the package in question (one of `canfar-clients/canfar/__version__.py`, `canfar-cloud-clients/canfar/__canfarcloud_version__.py`, and `cadc-clients/cadc/__version__.py`). Then, issue the following commands:
 ```
 $ python setup.py register -r pypi
 $ python setup.py sdist upload -r pypi

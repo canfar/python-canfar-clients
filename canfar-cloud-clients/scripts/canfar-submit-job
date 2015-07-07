@@ -72,7 +72,7 @@ import sys
 import traceback
 from argparse import RawDescriptionHelpFormatter
 
-from canfar.__version__ import version
+from canfar.__canfarcloud_version__ import version
 from canfar.common.parser import BaseParser
 from canfar.proc.client import ProcClient
 
