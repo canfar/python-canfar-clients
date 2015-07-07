@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # ************************************************************************
 # *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 # **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -72,7 +72,7 @@
 OLDPYTHONPATH=${PYTHONPATH}
 export ROOT_DIR=$(pwd)
 export PYTHONPATH=${ROOT_DIR}:${OLDPYTHONPATH}
-export PYTHON="/bin/env python"
+export PYTHON="env python"
 
 echo ""
 echo "***"

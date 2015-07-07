@@ -4,24 +4,24 @@ This Python package provides client libraries and command-line utilities for int
 ## Installation
 The `requirements.txt` file can be used to install all necessary dependencies globally:
 ```
-$ pip install -r requirements.txt
+$ sudo pip install -r requirements.txt
 ```
 
 Or to upgrade.
 ```
-$ pip install --upgrade -r requirements.txt
+$ sudo pip install --upgrade -r requirements.txt
 ```
 
 If **pip** fails, you may need to install other missing system dependencies before trying again.
 
 For example, with Ubuntu 14.04:
 ```
-$ sudo apt-get install libssl-dev libffi-dev libxml2-dev libxslt1-dev python-dev
+$ sudo apt-get install python-pip libssl-dev libffi-dev libxml2-dev libxslt1-dev python-dev
 ```
 
-After that, to install this project:
+After that, to install this project globally:
 ```
-$ python setup.py install
+$ sudo python setup.py install
 ```
 
 See

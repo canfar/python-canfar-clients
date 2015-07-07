@@ -79,8 +79,12 @@ import os.path
 import netrc
 import copy
 
-# disable the unverified HTTPS call warnings
-requests.packages.urllib3.disable_warnings()
+# try to disable the unverified HTTPS call warnings
+try:
+    requests.packages.urllib3.disable_warnings()
+except:
+    pass
+
 
 _SSL_VERSION = 'TLSv1'
 

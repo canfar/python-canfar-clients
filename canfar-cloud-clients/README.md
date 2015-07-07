@@ -4,17 +4,24 @@ This Python package extends the **canfar** package by providing client libraries
 ## Installation
 The `requirements.txt` file can be used to install all necessary dependencies globally:
 ```
-$ pip install -r requirements.txt
+$ sudo pip install -r requirements.txt
 ```
 
 Or to upgrade.
 ```
-$ pip install --upgrade -r requirements.txt
+$ sudo pip install --upgrade -r requirements.txt
 ```
 
-After that, to install this project:
+If **pip** fails, you may need to install other missing system dependencies before trying again.
+
+For example, with Ubuntu 14.04:
 ```
-$ python setup.py install
+$ sudo apt-get install python-pip python-dev
+```
+
+After that, to install this project globally:
+```
+$ sudo python setup.py install
 ```
 
 See
