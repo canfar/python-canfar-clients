@@ -60,14 +60,14 @@ for script in os.listdir(script_dir):
 
 setup(name='cadc',
       version=version,
-      description='CADC Python Clients',
+      description='Python client libraries and scripts for CADC web services',
       url='https://github.com/canfar/python-canfar-clients',
       author='Ed Chapin, Jeff Burke, Dustin Jenkins',
       author_email='cadc@nrc.ca',
       license='GNU Affero General Public License v3.0',
-      long_description='Python client libraries and scripts for CADC web services',
+      long_description='Clients for interacting with web services hosted by the Canadian Astronomy Data Centre',
       packages=find_packages(),
       scripts=scripts,
       provides=['cadc'],
       zip_safe=False,
-      requires=['lxml', 'canfar'])
+      install_requires=['lxml', 'canfar'])
