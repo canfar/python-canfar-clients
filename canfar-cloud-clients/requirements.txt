@@ -6,5 +6,4 @@ urllib3
 python-keystoneclient
 python-novaclient
 python-glanceclient
-functools32
 canfar
