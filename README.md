@@ -66,7 +66,10 @@ Then install **canfarcloud** using **pip** (this will automatically install the 
 $ sudo pip install canfarcloud
 ```
 
-Again, as noted above, you may see errors regarding **urllib3** which can be fixed by upgrading the package using **pip**.
+If you see errors regarding **urllib3** they can probably be fixed by upgrading the **requests** package:
+```
+$ sudo pip install --upgrade requests
+```
 
 ## Development with shared virtual environment
 If you are working on `cadc-clients` you will also want to have `canfar-clients` installed, as it is a dependency. In this event a shared virtual environment (**venv**) will be useful.
