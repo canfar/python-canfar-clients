@@ -71,30 +71,50 @@ import unittest
 import requests
 import os
 import sys
+import logging
+from copy import deepcopy
 
 # put local code at top of the search path
 sys.path.insert(0, os.path.abspath('../../../'))
 
 from canfar.groups.client import GroupsClient
 from canfar.groups.group_xml.group_reader import GroupReader
+from canfar.groups.group import Group
 
 test_certificate_name = "cadcproxy.pem"
 test_x500_dn = 'C=ca,O=someorg,OU=someunit,CN=somebody'
 test_http_username = 'somebody'
-test_base_url = "https://some/server/ac"
+test_host = 'some.host'
+test_base_url = 'https://%s/ac' % test_host
 test_group_id = 'testgroup_for_somebody'
 test_headers = {'content-type': 'text/xml'}
+test_params = {'IDTYPE' : 'x500', 'ROLE' : 'member', 'ID' : test_x500_dn}
 mock_session = mock.Mock(spec=requests.Session())
 mock_response = mock.Mock(spec=requests.Response())
+
+# XML test return documents and corresponding group ID sets
+_XML0 = '<?xml version="1.0" encoding="UTF-8"?>\r\n<groups />\r\n'
+_XML1 = '<?xml version="1.0" encoding="UTF-8"?>\r\n<groups>\r\n' + \
+        '<group uri="ivo://cadc.nrc.ca/gms#groupA">\r\n</group>' + \
+        '\r\n</groups>'
+_XML2 = '<?xml version="1.0" encoding="UTF-8"?>\r\n<groups>\r\n' + \
+        '<group uri="ivo://cadc.nrc.ca/gms#groupA">\r\n</group>' + \
+        '<group uri="ivo://cadc.nrc.ca/gms#groupB">\r\n</group>' + \
+        '\r\n</groups>'
+
+groups0 = []
+groups1 = [Group('groupA')]
+groups2 = [Group('groupA'), Group('groupB')]
 
 
 class ClientForTest(GroupsClient):
     """Subclass of GroupsClient with some hacks"""
 
-    def __init__(self, certfile):
-        super(ClientForTest,self).__init__(certfile)
+    def __init__(self, *args, **kwargs):
+        super(ClientForTest,self).__init__(*args, **kwargs)
         self.base_url = test_base_url
         self.certificate_file_location = test_certificate_name
+        self.is_authorized = True
         self.current_user_dn = test_x500_dn
 
     @staticmethod
@@ -202,6 +222,103 @@ class TestClient(unittest.TestCase):
                                              verify=False,
                                              json=None,
                                              headers=test_headers)
+
+    @mock.patch('os.path.isfile')           # fake loading cert
+    @mock.patch('canfar.common.client.BaseClient.get_current_user_dn') # fake dn
+    @mock.patch('requests.Session.get')     # fake get
+    def test_get_membership(self, mock_session_get, mock_get_dn, mock_isfile):
+        """
+        :param mock_session:       The mock_session object.
+        :return:
+        """
+        mock_response = mock.Mock()
+        mock_response.text = _XML2
+        mock_response.status_code = 200
+
+        mock_get_dn.return_value = test_x500_dn
+
+        c = GroupsClient(test_certificate_name, host=test_host)
+
+        # no arguments: return full list of memberships
+        mock_session_get.return_value = mock_response
+        self.assertEqual(c.get_membership(), groups2)
+        mock_session_get.assert_called_once_with(
+            test_base_url + "/search?", verify=False, params=test_params)
+        mock_session_get.reset_mock()
+
+        # provide a group name
+        mock_response.text = _XML1
+        these_params = deepcopy(test_params)
+        these_params['GROUPID'] = 'groupA'
+        self.assertEqual(c.get_membership(group_id='groupA'), groups1)
+        mock_session_get.assert_called_once_with(
+            test_base_url + "/search?", verify=False, params=these_params)
+        mock_session_get.reset_mock()
+
+        # group for which we are not a member
+        mock_response.text = _XML0
+        these_params['GROUPID'] = 'foo'
+        self.assertEqual(c.get_membership(group_id='foo'), groups0)
+        mock_session_get.assert_called_once_with(
+            test_base_url + "/search?", verify=False, params=these_params)
+        mock_session_get.reset_mock()
+
+    @mock.patch('os.path.isfile')           # fake loading cert
+    @mock.patch('canfar.common.client.BaseClient.get_current_user_dn') # fake dn
+    @mock.patch('requests.Session.get')     # fake get
+    def test_is_member(self, mock_session_get, mock_get_dn, mock_isfile):
+        """
+        :param mock_session:       The mock_session object.
+        :return:
+        """
+
+        mock_response = mock.Mock()
+        mock_response.text = _XML0
+        mock_response.status_code = 200
+
+        mock_response2 = mock.Mock()
+        mock_response2.text = _XML0
+        mock_response2.status_code = 200
+
+        mock_get_dn.return_value = test_x500_dn
+
+        c = GroupsClient(test_certificate_name, host=test_host)
+
+        these_params = deepcopy(test_params)
+
+        # Not a member of group
+        these_params['GROUPID'] = 'foo'
+        mock_session_get.return_value = mock_response
+        self.assertFalse(c.is_member('foo'))
+        mock_session_get.assert_called_once_with(
+            test_base_url + "/search?", verify=False, params=these_params)
+        mock_session_get.reset_mock()
+
+        # Member of single supplied group
+        mock_response.text = _XML1
+        these_params['GROUPID'] = 'groupA'
+        self.assertTrue(c.is_member('groupA'))
+        mock_session_get.assert_called_once_with(
+            test_base_url + "/search?", verify=False, params=these_params)
+        mock_session_get.reset_mock()
+
+        # Member of one of a list of groups: success after checking first
+        self.assertTrue(c.is_member(['groupA', 'bork']))
+        mock_session_get.assert_called_once_with(
+            test_base_url + "/search?", verify=False, params=these_params)
+        mock_session_get.reset_mock()
+
+        # Member of one of a list of groups: 2 calls, success on second
+        these_params2 = deepcopy(test_params)
+        these_params2['GROUPID'] = 'bork'
+        mock_session_get.side_effect = [mock_response2, mock_response]
+        self.assertTrue(c.is_member(['bork','groupA']))
+        mock_session_get.assert_has_calls(
+            [ mock.call(test_base_url + "/search?", verify=False,
+                        params=these_params2),
+              mock.call(test_base_url + "/search?", verify=False,
+                        params=these_params) ] )
+        mock_session_get.reset_mock()
 
 
 def run():

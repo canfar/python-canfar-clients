@@ -99,11 +99,14 @@ if __name__=='__main__':
     is_member = False
     try:
         c = GroupsClient(certfile, log_level=log_level)
-        group = c.get_group(groupnames)
         is_member = c.is_member(groupnames,role=role)
     except Exception as e:
         print str(e)
         sys.exit(1)
 
-    print is_member
-    sys.exit(0)
+    if is_member:
+        if not args.quiet:
+            print is_member
+        sys.exit(0)
+    else:
+        sys.exit(1)

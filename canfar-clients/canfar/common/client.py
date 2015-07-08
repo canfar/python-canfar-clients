@@ -278,11 +278,14 @@ class BaseClient(object):
 
         return response
 
-    def _download_xml(self, url):
+    def _download_xml(self, url, *args, **kwargs):
         """ GET XML string from URL """
         self.logger.debug('Requesting XML: %s' % url)
 
-        response = self._get(url, verify=False)
+        response = self._get(url, verify=False, *args, **kwargs)
+
+        self.logger.debug('Full request URL: %s' % response.url)
+
         self.check_exception(response)
         xml_string = response.text
         xml_string = xml_string.encode('utf-8')
