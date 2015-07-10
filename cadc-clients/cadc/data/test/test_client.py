@@ -145,7 +145,7 @@ class TestClient(unittest.TestCase):
         self.assertIsNone(c.basic_auth)
         self.assertFalse(c.is_authorized)
         self.assertEqual(c.protocol,'http')
-
+        self.assertEqual(c.chunk_size,1024)
         self.assertIsNotNone(c.transfer_reader)
         self.assertFalse(c.transfer_reader.validate)
         self.assertIsNotNone(c.transfer_writer)

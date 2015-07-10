@@ -346,7 +346,14 @@ class BaseClient(object):
         """
 
         status_code = response.status_code
-        status_text = response.text
+        try:
+            status_text = response.text
+        except RuntimeError as E:
+            # This is to handle the case of a streamed get in which
+            # case Requests will report
+            # 'The content for this response was already consumed'
+            status_text = ''
+            pass
 
         self.logger.debug("Response code: %d" % status_code)
         if status_code != 200:
