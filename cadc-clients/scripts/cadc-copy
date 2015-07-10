@@ -106,6 +106,9 @@ if __name__=='__main__':
     parser.add_argument('--ignorefailures', action='store_true',
                         default=False,
                         help='continue even if individual file transfers fail')
+    parser.add_argument('--chunk_size', default=1024, type=int,
+                        help='Set stream chunk size for get.')
+
 
     args=parser.parse_args()
     log_level = parser.get_log_level(args)
@@ -119,6 +122,7 @@ if __name__=='__main__':
         is_put = False
     archive = args.archive
     ignorefailures = args.ignorefailures
+    chunk_size = args.chunk_size
 
     # The user can specify a single local file, a list of files,
     # or a glob
@@ -151,7 +155,8 @@ if __name__=='__main__':
     try:
         # Schema validation is slow due to large initial overhead (~1.5s) ?
         c = DataClient(certfile=certfile, schema_validate=False,
-                       host=host, anonymous=anonymous, log_level=log_level)
+                       host=host, anonymous=anonymous, log_level=log_level,
+                       chunk_size=chunk_size)
         c.logger.debug("Start")
     except Exception as e:
         print str(e)

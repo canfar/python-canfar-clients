@@ -77,13 +77,19 @@ import requests
 class DataClient(BaseClient):
     """Class for interacting with the data web service"""
 
-    def __init__(self, schema_validate=False, *args, **kwargs):
-        """Data service client constructor."""
+    def __init__(self, schema_validate=False, chunk_size=1024, *args, **kwargs):
+        """Data service client constructor.
+
+        schema_validate -- validate XML transfer document if True
+        chunk_size -- buffer size for get file streaming
+        """
 
         super(DataClient, self).__init__(*args, **kwargs)
 
         self.transfer_reader = TransferReader(validate=schema_validate)
         self.transfer_writer = TransferWriter()
+
+        self.chunk_size = chunk_size
 
         # Specific base_url for data webservice, and a separate base URL
         # that will be used for HEAD requests (either */data/auth or
@@ -190,19 +196,22 @@ class DataClient(BaseClient):
                     r = requests.put(url, data=f)
                     self.check_exception(r)
                 else:
+                    self.logger.debug('Get streaming chunk_size is %i' % \
+                                          self.chunk_size)
                     r = requests.get(url, stream=True)
-                    self.check_exception(r)
                     with open(localfile, 'wb') as f:
-                        for chunk in r.iter_content(chunk_size=1024):
+                        for chunk in r.iter_content(chunk_size=self.chunk_size):
                             if chunk:
                                 f.write(chunk)
                                 f.flush
 
+                    self.check_exception(r)
                 success = True
                 break
             except Exception as e:
                 # Reset to start of file. Try next endpoint
-                f.seek(0)
+                if not f.closed:
+                    f.seek(0)
                 self.logger.warning('Transfer %s %s %s failed:\n%s' %
                                     (str(localfile), str(dir_str),
                                      str(uri_transfer), str(e)) )

@@ -70,6 +70,13 @@ newmd5=`md5sum $TESTFILE`
 [[ "$newmd5" != "$MD5" ]] && echo " md5 [FAIL]" && exit -1
 echo " [OK]"
 
+echo -n "get file from archive with different chunk_size..."
+$COPYCMD get $ARCHIVE $TESTFILE --chunk_size=4096
+[[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
+newmd5=`md5sum $TESTFILE`
+[[ "$newmd5" != "$MD5" ]] && echo " md5 [FAIL]" && exit -1
+echo " [OK]"
+
 echo -n "anonymous get file from archive..."
 $COPYCMD get $ARCHIVE $TESTFILE --anonymous
 [[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
