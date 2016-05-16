@@ -65,7 +65,6 @@
 # ************************************************************************
 
 import logging
-import netrc
 import os
 from argparse import ArgumentParser
 

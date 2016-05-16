@@ -73,7 +73,6 @@ import unittest
 sys.path.insert(0, os.path.abspath('../../../'))
 
 from canfar.groups.group import Group
-from canfar.groups.identity import Identity
 from canfar.groups.user import User
 from canfar.groups.group_xml.groups_reader import GroupsReader
 from canfar.groups.group_xml.groups_writer import GroupsWriter
@@ -99,8 +98,12 @@ class TestGroupsReaderWriter(unittest.TestCase):
 
     def test_minimal_read_write(self):
 
-        group1 = Group('groupID_1', User(Identity('user_dn_1', 'X500')))
-        group2 = Group('groupID_2', User(Identity('user_dn_2', 'X500')))
+        group1 = Group('groupID_1')
+        group2 = Group('groupID_2')
+        owner1 = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-00000000000a')
+        owner2 = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-00000000000b')
+        group1.owner = owner1
+        group2.owner = owner2
         expected = [group1, group2]
 
         writer = GroupsWriter()

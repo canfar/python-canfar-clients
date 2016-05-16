@@ -72,15 +72,19 @@ import unittest
 # put local code at top of the search path
 sys.path.insert(0, os.path.abspath('../../../'))
 
-from canfar.groups.identity import Identity
-from canfar.groups.user import User
 from canfar.groups.group_xml.user_reader import UserReader
 from canfar.groups.group_xml.user_writer import UserWriter
+from canfar.groups.user import User
+from canfar.groups.identity import Identity
 
 
 class TestUserReaderWriter(unittest.TestCase):
     def test_read_write(self):
-        expected = User(Identity('openid1', 'OpenID'))
+        expected = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-000000000a8b')
+        expected.identities.add(Identity('foo@bar.com', 'OpenID'))
+        expected.identities.add(Identity('foo', 'HTTP'))
+        expected.identities.add(Identity('00000000-0000-0000-0000-000000000004', 'CADC'))
+        expected.identities.add(Identity('CN=cadcauthtest1_24c,OU=cadc,O=hia,C=ca', 'X500'))
 
         writer = UserWriter()
         xml_string = writer.write(expected)
@@ -92,8 +96,8 @@ class TestUserReaderWriter(unittest.TestCase):
         actual = reader.read(xml_string)
 
         self.assertIsNotNone(actual)
-        self.assertEqual(actual.user_id.type, expected.user_id.type)
-        self.assertEqual(actual.user_id.name, expected.user_id.name)
+        self.assertEqual(actual.internal_id, expected.internal_id)
+
 
 def run():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestUserReaderWriter)

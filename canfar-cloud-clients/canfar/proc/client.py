@@ -68,17 +68,16 @@
 
 import logging
 import os
-import uuid
 import re
+import uuid
+
+import glanceclient.v2.client as glclient
+import keystoneclient.v2_0.client as ksclient
+import novaclient.client as nclient
+from canfar.common.client import BaseClient
+from glanceclient.exc import HTTPConflict
 from requests.auth import HTTPBasicAuth
 
-import keystoneclient.v2_0.client as ksclient
-from keystoneclient.apiclient import exceptions as keystone_exceptions
-import novaclient.client as nclient
-import glanceclient.v2.client as glclient
-from glanceclient.exc import HTTPConflict
-
-from canfar.common.client import BaseClient
 
 class ProcClient(BaseClient):
     """Class for interacting with CANFAR proc service"""

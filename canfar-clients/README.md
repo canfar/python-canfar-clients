@@ -114,10 +114,3 @@ or with additional options to calculate coverage:
 ```
 $ python -m trace --count -s -m --ignore-dir=${VIRTUAL_ENV}:/usr test_client.py
 ```
-
-### Integration Tests
-The integration tests are, at present, designed to run only at CADC. For this to work, you will probably want to do the following:
-
-1. Set the environment variable `$CADC_ROOT` to the path where CADC software are installed.
-2. Install the clients (to the venv) using `$ python setup.py install`
-3. `$ test/inttest`
