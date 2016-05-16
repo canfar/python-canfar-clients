@@ -66,12 +66,13 @@
 # ***********************************************************************
 
 import string
+
 from lxml import etree
-from group_property_reader import GroupPropertyReader
-from canfar.groups.identity import Identity
-from canfar.groups.group import Group
-from canfar.groups.user import User
+
 from canfar.common.util import str2ivoa
+from canfar.groups.group import Group
+from group_property_reader import GroupPropertyReader
+from user_reader import UserReader
 
 GROUP_URI = 'ivo://cadc.nrc.ca/gms#'
 
@@ -94,22 +95,19 @@ class GroupReader(object):
         if uri is None:
             raise GroupParsingException("group missing required uri attribute")
         if string.find(uri, GROUP_URI) != 0:
-            raise GroupParsingException(
-                "group uri attribute malformed: " + uri)
+            raise GroupParsingException("group uri attribute malformed: {0}".format(uri))
 
         group_id = uri[len(GROUP_URI):]
-        owner = self._get_owner(group_element)
-        group = Group(group_id, owner)
+        group = Group(group_id)
+        group.owner = self._get_owner(group_element)
 
         if deep_copy:
-            group.description = self._get_child_text(group_element,
-                                                     'description')
+            group.description = self._get_child_text(group_element, 'description')
             last_modified = self._get_child_text(group_element, 'lastModified')
             if last_modified is not None:
                 group.last_modified = str2ivoa(last_modified)
             group.properties = self._get_group_properties(group_element)
-            group.group_members = self._get_groups(group_element,
-                                                   'groupMembers')
+            group.group_members = self._get_groups(group_element, 'groupMembers')
             group.user_members = self._get_users(group_element, 'userMembers')
             group.group_admins = self._get_groups(group_element, 'groupAdmins')
             group.user_admins = self._get_users(group_element, 'userAdmins')
@@ -133,21 +131,12 @@ class GroupReader(object):
         return None
 
     def _get_owner(self, group_element):
-        identity_elements = group_element.findall('./owner/user/userID/identity')
-        if not identity_elements:
+        user_element = group_element.find('./owner/user')
+        if user_element is None:
             return None
 
-        identity_type = identity_elements[0].get('type')
-        name = identity_elements[0].text
-        user = User(Identity(name, identity_type))
-
-        identities_element = \
-            group_element.findall('./owner/user/identities/identity')
-        for identity_element in identities_element:
-            identity_type = identity_element.get('type')
-            name = identity_element.text
-            user.identities.add(Identity(name, identity_type))
-
+        user_reader = UserReader()
+        user = user_reader.get_user(user_element)
         return user
 
     def _get_group_properties(self, group_element):
@@ -172,10 +161,9 @@ class GroupReader(object):
         user_elements = self._get_child_element(parent, tag)
         if user_elements is not None:
             for user in user_elements.findall('user'):
-                identity_elements = user.findall('./userID/identity')
-                identity_type = identity_elements[0].get('type')
-                name = identity_elements[0].text
-                users.add(User(Identity(name, identity_type)))
+                user_reader = UserReader()
+                user = user_reader.get_user(user)
+                users.add(user)
         return users
 
 

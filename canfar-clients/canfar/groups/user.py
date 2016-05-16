@@ -73,18 +73,18 @@ class User(object):
 
     """
 
-    def __init__(self, user_id):
+    def __init__(self, internal_id=None):
         """
         user_id is an Identity containing the Identity name and type.
         """
-        self.user_id = user_id
+        self.internal_id = internal_id
         self.identities = set()
 
     def __eq__(self, other):
-        return self.user_id == other.user_id
+        return self.internal_id == other.internal_id
 
     def __hash__(self):
-        return hash(self.user_id)
+        return hash(self.internal_id)
 
     def __repr__(self):
-        return self.user_id
+        return self.internal_id

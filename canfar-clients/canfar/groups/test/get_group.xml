@@ -2,34 +2,34 @@
 <group uri="ivo://cadc.nrc.ca/gms#testgroup_for_somebody">
   <owner>
     <user>
-      <userID>
-        <identity type="X500">C=ca,O=someorg,OU=someunit,CN=somebody</identity>
-      </userID>
+      <internalID>
+        <uri>ivo://bar.com/foo</uri>
+      </internalID>
       <identities>
-        <identity type="HTTP">somebody</identity>
+        <identity type="HTTP">foo</identity>
       </identities>
       <details>
         <userDetails type="personalDetails">
-          <firstName>Some</firstName>
-          <lastName>Body</lastName>
+          <firstName>foo</firstName>
+          <lastName>bar</lastName>
         </userDetails>
       </details>
     </user>
   </owner>
-  <description>Group for somebody</description>
+  <description>Group for foobar</description>
   <lastModified>1977-11-25T03:12:30.000</lastModified>
   <userMembers>
     <user>
-      <userID>
-        <identity type="X500">C=ca,O=someorg,OU=someunit,CN=somebody</identity>
-      </userID>
+      <internalID>
+        <uri>ivo://foo.com/bar</uri>
+      </internalID>
       <identities>
-        <identity type="HTTP">somebody</identity>
+        <identity type="HTTP">bar</identity>
       </identities>
       <details>
         <userDetails type="personalDetails">
-          <firstName>Some</firstName>
-          <lastName>Body</lastName>
+          <firstName>bar</firstName>
+          <lastName>foo</lastName>
         </userDetails>
       </details>
     </user>

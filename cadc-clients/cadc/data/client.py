@@ -64,15 +64,17 @@
 # *
 # ************************************************************************
 
+import logging
+
+import requests
 from canfar.common.client import BaseClient
+from canfar.common.exceptions import UnauthorizedException
+
+from cadc.data.exceptions import TransferException
+from cadc.data.transfer import Transfer
 from cadc.data.transfer_reader import TransferReader
 from cadc.data.transfer_writer import TransferWriter
-from cadc.data.transfer import Transfer
-from cadc.data.exceptions import TransferException
-from canfar.common.exceptions import UnauthorizedException
-import urlparse
-import logging
-import requests
+
 
 class DataClient(BaseClient):
     """Class for interacting with the data web service"""
