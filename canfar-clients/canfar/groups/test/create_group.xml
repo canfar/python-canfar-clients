@@ -2,16 +2,16 @@
 <group uri="ivo://cadc.nrc.ca/gms#testgroup_for_somebody">
   <owner>
     <user>
-      <userID>
-        <identity type="HTTP">somebody</identity>
-      </userID>
+      <internalID>
+        <uri>ivo://bar.com/foo</uri>
+      </internalID>
     </user>
   </owner>
   <userMembers>
     <user>
-      <userID>
-        <identity type="HTTP">somebody</identity>
-      </userID>
+      <internalID>
+        <uri>ivo://foo.com/bar</uri>
+      </internalID>
     </user>
   </userMembers>
 </group>

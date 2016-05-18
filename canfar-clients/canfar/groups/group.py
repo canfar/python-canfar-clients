@@ -73,7 +73,7 @@ class Group(object):
 
     """
 
-    def __init__(self, group_id, owner=None):
+    def __init__(self, group_id):
         """
         """
         group_id_re = re.compile('^[a-zA-Z0-9\\-\\.~_]*$')
@@ -81,8 +81,8 @@ class Group(object):
             raise Exception('Invalid group ID %s may not contain space ( ), slash (/), escape (\), or percent (%)' % group_id_re)
 
         self.group_id = group_id
-        self.owner = owner
 
+        self.owner = None
         self.description = None
         self.last_modified = None
         self.properties = set()

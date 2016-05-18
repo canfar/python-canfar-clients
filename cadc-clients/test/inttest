@@ -35,7 +35,7 @@ TESTFILE="publicTest"
 # Create a test file and put it in the system
 rm ${TESTFILE}* 2> /dev/null
 rm foo 2> /dev/null
-echo "testfile" >> $TESTFILE
+dd if=/dev/urandom of=$TESTFILE bs=1M count=1 2> /dev/null
 MD5=`md5sum $TESTFILE`
 
 echo -n "put file into archive..."
@@ -65,6 +65,13 @@ echo " [OK]"
 
 echo -n "get file from archive..."
 $COPYCMD get $ARCHIVE $TESTFILE
+[[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
+newmd5=`md5sum $TESTFILE`
+[[ "$newmd5" != "$MD5" ]] && echo " md5 [FAIL]" && exit -1
+echo " [OK]"
+
+echo -n "get file from archive with different chunk_size..."
+$COPYCMD get $ARCHIVE $TESTFILE --chunk_size=4096
 [[ "$?" != "0" ]] && echo " cmd [FAIL]" && exit -1
 newmd5=`md5sum $TESTFILE`
 [[ "$newmd5" != "$MD5" ]] && echo " md5 [FAIL]" && exit -1

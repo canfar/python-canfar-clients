@@ -128,7 +128,7 @@ class GroupsClient(BaseClient):
         xml_string = self._download_xml(url)
         reader = GroupReader()
         group = reader.read(xml_string)
-        self.logger.info('Retrieved group ' + group.group_id)
+        self.logger.info('Retrieved group {0}'.format(group.group_id))
         return group
 
     def update_group(self, group):

@@ -66,8 +66,9 @@
 # ***********************************************************************
 
 from lxml import etree
-from canfar.groups.identity import Identity
+
 from canfar.groups.user import User
+from canfar.groups.identity import Identity
 
 
 class UserReader(object):
@@ -84,24 +85,27 @@ class UserReader(object):
         return self.get_user(root)
 
     def get_user(self, user_element):
-        user_id_element = user_element.find('userID')
-        if user_id_element is None:
-            raise UserParsingException("userID element not found in user element")
+        internal_id_element = user_element.find('internalID')
+        if internal_id_element is None:
+            raise UserParsingException("internalID element not found in user element")
 
-        identity_element = user_id_element.find('identity')
-        if identity_element is None:
-            raise UserParsingException("identity element not found in userID element")
+        uri_element = internal_id_element.find('uri')
+        if uri_element is None:
+            raise UserParsingException("uri element not found in internalID element")
 
-        try:
+        uri = uri_element.text
+        if not uri:
+            raise UserParsingException("uri element has no text value")
+
+        user = User(uri)
+
+        identities_element = user_element.findall('./identities/identity')
+        for identity_element in identities_element:
             identity_type = identity_element.get('type')
-        except KeyError:
-            raise UserParsingException('identity missing required type attribute')
+            name = identity_element.text
+            user.identities.add(Identity(name, identity_type))
 
-        name = identity_element.text
-        if not name:
-            raise UserParsingException('identity element has no text value')
-
-        return User(Identity(name, identity_type))
+        return user
 
 
 class UserParsingException(Exception):

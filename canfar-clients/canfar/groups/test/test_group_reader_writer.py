@@ -82,7 +82,7 @@ from canfar.groups.group_xml.group_writer import GroupWriter
 
 class TestGroupReaderWriter(unittest.TestCase):
     def test_minimal_group(self):
-        expected = Group('groupID', None)
+        expected = Group('groupID')
         writer = GroupWriter()
         xml_string = writer.write(expected, False)
 
@@ -112,29 +112,44 @@ class TestGroupReaderWriter(unittest.TestCase):
         self.assertItemsEqual(actual.user_admins, expected.user_admins)
 
     def test_maximal_group(self):
-        expected = Group('groupID', User(Identity('username', 'HTTP')))
+        owner = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-00000000000a')
+        owner.identities.add(Identity('cn=foo,c=ca', 'X500'))
+        owner.identities.add(Identity('foo@bar.com', 'OpenID'))
+        owner.identities.add(Identity('foo', 'HTTP'))
+        owner.identities.add(Identity('00000000-0000-0000-0000-000000000001', 'CADC'))
+
+        expected = Group('groupID')
+        expected.owner = owner
         expected.description = 'description'
         expected.last_modified = datetime(2014, 01, 20, 19, 45, 37, 0)
         expected.properties.add(GroupProperty('key1', 'value1', True))
         expected.properties.add(GroupProperty('key2', 'value2', False))
 
-        group_member1 = Group('groupMember1', User(Identity('uid1', 'UID')))
-        group_member2 = Group('groupMember2', User(Identity('uid2', 'UID')))
+        user1 = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-00000000000b')
+        user2 = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-00000000000c')
+        group_member1 = Group('groupMember1')
+        group_member1.owner = user1
+        group_member2 = Group('groupMember2')
+        group_member2.owner = user2
         expected.group_members.add(group_member1)
         expected.group_members.add(group_member2)
 
-        user_member1 = User(Identity('openid1', 'OpenID'))
-        user_member2 = User(Identity('openid2', 'OpenID'))
+        user_member1 = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-00000000000d')
+        user_member2 = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-00000000000e')
         expected.user_members.add(user_member1)
         expected.user_members.add(user_member2)
 
-        group_admin1 = Group('adminMember1', User(Identity('x5001', 'X500')))
-        group_admin2 = Group('adminMember2', User(Identity('x5002', 'X500')))
+        owner1 = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-00000000000f')
+        owner2 = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-0000000000aa')
+        group_admin1 = Group('adminMember1')
+        group_admin1.owner = owner1
+        group_admin2 = Group('adminMember2')
+        group_admin2.owner = owner2
         expected.group_admins.add(group_admin1)
         expected.group_admins.add(group_admin2)
 
-        user_admin1 = User(Identity('foo1', 'HTTP'))
-        user_admin2 = User(Identity('foo2', 'HTTP'))
+        user_admin1 = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-0000000000ab')
+        user_admin2 = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-0000000000ac')
         expected.user_admins.add(user_admin1)
         expected.user_admins.add(user_admin2)
 
@@ -151,8 +166,8 @@ class TestGroupReaderWriter(unittest.TestCase):
         self.assertIsNotNone(actual.group_id)
         self.assertEqual(actual.group_id, expected.group_id)
 
-        self.assertEqual(actual.owner.user_id.type, expected.owner.user_id.type)
-        self.assertEqual(actual.owner.user_id.name, expected.owner.user_id.name)
+        self.assertEqual(actual.owner.internal_id, expected.owner.internal_id)
+        self.assertEqual(actual.owner.identities, expected.owner.identities)
         self.assertEqual(actual.description, expected.description)
         self.assertEqual(actual.last_modified, expected.last_modified)
 

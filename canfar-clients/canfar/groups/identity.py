@@ -70,7 +70,7 @@
 
 class Identity(object):
 
-    identity_types = ['X500', 'OpenID', 'HTTP', 'UID']
+    identity_types = ['X500', 'OpenID', 'HTTP', 'CADC']
 
     def __init__(self, name, identity_type):
         if name is None or not name:

@@ -4,16 +4,13 @@
 
 import os
 import sys
-import uuid
 import unittest
-import logging
+import uuid
 
 # put local code at top of the search path
 sys.path.insert(0, os.path.abspath('../'))
 from canfar.groups.client import GroupsClient
 from canfar.groups.group import Group
-from canfar.groups.identity import Identity
-from canfar.groups.user import User
 
 
 class GroupsClientIntTest(unittest.TestCase):
@@ -41,41 +38,39 @@ class GroupsClientIntTest(unittest.TestCase):
         #client = GroupsClient(self.cert_file, log_level=logging.DEBUG)
         client = GroupsClient(self.cert_file)
 
-        # create the owner
-        owner = User(Identity(client.current_user_dn, 'X500'))
-
         # create a group
-        expected = Group(self.get_group_id('py1'), owner)
+        expected = Group(self.get_group_id('py1'))
         expected.description = 'group description'
-        print 'expected group ' + expected
+        print 'expected group {0}'.format(expected)
 
         try:
             client.create_group(expected)
         except Exception, e:
-            self.fail('Error creating group because ' + repr(e))
+            self.fail('Error creating group because {0}'.format(repr(e)))
 
         # get the group
         try:
             actual = client.get_group(expected.group_id)
         except Exception, e:
-            self.fail('Error getting group because ' + repr(e))
+            self.fail('Error getting group because {0}'.format(repr(e)))
 
         self.assertEqual(actual.group_id, expected.group_id, 'group_ids do not match')
         self.assertEqual(actual.description, expected.description, 'descriptions do not match')
-        self.assertEqual(actual.owner.user_id, expected.owner.user_id, 'owner user_ids do not match')
 
         # update the group
+        owner = actual.owner
+
         expected.description = 'new description'
         expected.user_members.add(owner)
         expected.user_admins.add(owner)
 
         # create a second test group
-        group_member = Group(self.get_group_id('py2'), owner)
+        group_member = Group(self.get_group_id('py2'))
         try:
             client.create_group(group_member)
         except Exception, e:
-            self.fail('Error creating group because ' + repr(e))
-        print 'group member ' + group_member
+            self.fail('Error creating group because {0}'.format(repr(e)))
+        print 'group member {0}'.format(group_member)
 
         expected.group_members.add(group_member)
         expected.group_admins.add(group_member)
@@ -89,7 +84,7 @@ class GroupsClientIntTest(unittest.TestCase):
 
         self.assertEqual(actual.group_id, expected.group_id, 'group_ids do not match')
         self.assertEqual(actual.description, expected.description, 'descriptions do not match')
-        self.assertEqual(actual.owner.user_id, expected.owner.user_id, 'owner user_ids do not match')
+        # self.assertEqual(actual.owner.user_id, expected.owner.user_id, 'owner user_ids do not match')
 
         self.assertEqual(len(actual.group_members), len(expected.group_members),
                          'number of group members does not match')
@@ -103,12 +98,12 @@ class GroupsClientIntTest(unittest.TestCase):
 
         self.assertEqual(len(actual.user_members), len(expected.user_members),
                          'number of user members does not match')
-        self.assertEqual(next(iter(actual.user_members)).user_id, next(iter(expected.user_members)).user_id,
+        self.assertEqual(next(iter(actual.user_members)).internal_id, next(iter(expected.user_members)).internal_id,
                          'user members do not match')
 
         self.assertEqual(len(actual.user_admins), len(expected.user_admins),
                          'number of user admins does not match')
-        self.assertEqual(next(iter(actual.user_admins)).user_id, next(iter(expected.user_admins)).user_id,
+        self.assertEqual(next(iter(actual.user_admins)).internal_id, next(iter(expected.user_admins)).internal_id,
                          'user admins do not match')
 
 suite = unittest.TestLoader().loadTestsFromTestCase(GroupsClientIntTest)
