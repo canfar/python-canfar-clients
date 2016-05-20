@@ -71,7 +71,9 @@ import logging
 import os
 import exceptions
 from group_xml.group_reader import GroupReader
+from group_xml.groups_reader import GroupsReader
 from group_xml.group_writer import GroupWriter
+from role import Role
 from canfar.common.client import BaseClient
 
 
@@ -145,3 +147,58 @@ class GroupsClient(BaseClient):
     def _make_logger(self):
         """ Logger for gmsclient """
         self.logger = logging.getLogger('gmsclient')
+
+    def get_membership(self, user_id=None, role=Role('member'),
+                       group_id=None):
+        """Search for user group membership, of a certain role.
+
+        user_id -- if unspecified default to current_user_dn
+        role -- Role
+        group_id -- if specified search only for this group
+        """
+
+        if not user_id:
+            user_id = self.current_user_dn
+
+        url = self.base_url + "/search?"
+        params = {'ID' : user_id,
+                  'IDTYPE' : 'x500',
+                  'ROLE' : role.get_name()}
+        if group_id:
+            params['GROUPID'] = group_id
+
+        xml_string = self._download_xml(url, params=params)
+        reader = GroupsReader()
+        groups = reader.read(xml_string)
+
+        self.logger.info('Retrieved groups ' + \
+                             ', '.join([g.group_id for g in groups]))
+
+        return groups
+
+    def is_member(self, group_ids, user_id=None, role=Role('member')):
+        """ Return True if user_id is a member (type of role) of at
+        least one group in group_ids. False otherwise.
+
+        group_ids -- list of group ID strings
+        user_id -- if unspecified default to x509_dn
+        role -- Role
+        """
+
+        # Allow the caller to supply a single string
+        if isinstance(group_ids, str):
+            group_ids = [group_ids]
+
+        if not user_id:
+            user_id = self.current_user_dn
+
+        # get_membership returns a single-element set if member of a
+        # particular group. Stop as soon as we find one.
+        for group in group_ids:
+            if self.get_membership(group_id=group, user_id=user_id,
+                                   role=role):
+                return True
+
+        return False
+
+
