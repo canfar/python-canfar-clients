@@ -11,6 +11,7 @@ import uuid
 sys.path.insert(0, os.path.abspath('../'))
 from canfar.groups.client import GroupsClient
 from canfar.groups.group import Group
+from canfar.groups.group_xml.group_writer import GroupWriter
 
 
 class GroupsClientIntTest(unittest.TestCase):
@@ -75,12 +76,19 @@ class GroupsClientIntTest(unittest.TestCase):
         expected.group_members.add(group_member)
         expected.group_admins.add(group_member)
 
+        writer = GroupWriter()
+        expected_xml = writer.write(expected)
+        print "expected:\n{0}".format(expected_xml)
+
         try:
             client.update_group(expected)
             actual = client.get_group(expected.group_id)
         except Exception, e:
             # self.fail('Error getting group because ' + repr(e))
             raise
+
+        actual_xml = writer.write(actual)
+        print "actual:\n{0}".format(actual_xml)
 
         self.assertEqual(actual.group_id, expected.group_id, 'group_ids do not match')
         self.assertEqual(actual.description, expected.description, 'descriptions do not match')
