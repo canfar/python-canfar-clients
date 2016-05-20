@@ -69,12 +69,15 @@
 
 import logging
 import os
+
 import exceptions
-from group_xml.group_reader import GroupReader
-from group_xml.groups_reader import GroupsReader
-from group_xml.group_writer import GroupWriter
-from role import Role
 from canfar.common.client import BaseClient
+from canfar.groups.identity import Identity
+from group_xml.group_reader import GroupReader
+from group_xml.group_writer import GroupWriter
+from group_xml.groups_reader import GroupsReader
+from group_xml.user_reader import UserReader
+from role import Role
 
 
 class GroupsClient(BaseClient):
@@ -202,3 +205,47 @@ class GroupsClient(BaseClient):
         return False
 
 
+class UsersClient(BaseClient):
+    """Class for interacting with the access control web service"""
+
+    def __init__(self, *args, **kwargs):
+        """GMS client constructor. The dn will be extracted from the
+        x509 cert and available as a default for user_id in other
+        method calls.
+
+        certfile -- Path to CADC proxy certificate
+        """
+
+        # This client does not support name/password authentication
+        super(UsersClient, self).__init__(usenetrc=False, *args, **kwargs)
+
+        # Specific base_url for AC webservice
+        host = os.getenv('AC_WEBSERVICE_HOST', self.host)
+        path = os.getenv('AC_WEBSERVICE_PATH', '/ac')
+        self.base_url = '%s://%s%s' % ('https', host, path)
+        self.logger.info('Base URL ' + self.base_url)
+
+        # This client will need the user DN
+        self.current_user_dn = self.get_current_user_dn()
+
+        # Specialized exceptions handled by this client
+        self._HTTP_STATUS_CODE_EXCEPTIONS[404] = {
+            "User": exceptions.UserNotFoundException(),
+            "Group": exceptions.GroupNotFoundException()
+        }
+        self._HTTP_STATUS_CODE_EXCEPTIONS[409] = \
+            exceptions.GroupExistsException()
+
+    def get_user(self, identity):
+
+        if identity is None:
+            raise ValueError("User Identity cannot be None.")
+        if not isinstance(identity, Identity):
+            raise ValueError("identity must be of type Identity.")
+
+        url = "{0}/users/{1}?idType={2}".format(self.base_url, identity.name, identity.type)
+        xml_string = self._download_xml(url)
+        reader = UserReader()
+        user = reader.read(xml_string)
+        self.logger.info('Retrieved user {0}'.format(user.internal_id))
+        return user

@@ -77,7 +77,8 @@ from copy import deepcopy
 # put local code at top of the search path
 sys.path.insert(0, os.path.abspath('../../../'))
 
-from canfar.groups.client import GroupsClient
+from canfar.groups.client import GroupsClient, UsersClient
+from canfar.groups.identity import Identity
 from canfar.groups.group_xml.group_reader import GroupReader
 from canfar.groups.group import Group
 
@@ -107,11 +108,11 @@ groups1 = [Group('groupA')]
 groups2 = [Group('groupA'), Group('groupB')]
 
 
-class ClientForTest(GroupsClient):
+class GroupsClientForTest(GroupsClient):
     """Subclass of GroupsClient with some hacks"""
 
     def __init__(self, *args, **kwargs):
-        super(ClientForTest,self).__init__(*args, **kwargs)
+        super(GroupsClientForTest, self).__init__(*args, **kwargs)
         self.base_url = test_base_url
         self.certificate_file_location = test_certificate_name
         self.is_authorized = True
@@ -133,14 +134,40 @@ class ClientForTest(GroupsClient):
         return test_x500_dn
 
 
-test_create_group_xml = ClientForTest.read_data('create_group.xml')
-test_get_group_xml = ClientForTest.read_data('get_group.xml')
+class UsersClientForTest(UsersClient):
+    """Subclass of GroupsClient with some hacks"""
+
+    def __init__(self, *args, **kwargs):
+        super(UsersClientForTest, self).__init__(*args, **kwargs)
+        self.base_url = test_base_url
+        self.certificate_file_location = test_certificate_name
+        self.is_authorized = True
+        self.current_user_dn = test_x500_dn
+
+    @staticmethod
+    def read_data(location):
+        f = open(location, 'r')
+        try:
+            data = f.read()
+            return data
+        finally:
+            f.close()
+
+    def _create_session(self):
+        self.session = mock_session
+
+    def get_current_user_dn(self):
+        return test_x500_dn
+
+test_create_group_xml = GroupsClientForTest.read_data('create_group.xml')
+test_get_group_xml = GroupsClientForTest.read_data('get_group.xml')
+test_get_user_xml = UsersClientForTest.read_data('get_user.xml')
 
 
 class TestClient(unittest.TestCase):
 
     def test_create_group(self):
-        c = ClientForTest(test_certificate_name)
+        c = GroupsClientForTest(test_certificate_name)
 
         try:
             c.create_group(None)
@@ -174,7 +201,7 @@ class TestClient(unittest.TestCase):
                                             headers=test_headers)
 
     def test_get_group(self):
-        c = ClientForTest(test_certificate_name)
+        c = GroupsClientForTest(test_certificate_name)
 
         try:
             c.get_group('')
@@ -195,7 +222,7 @@ class TestClient(unittest.TestCase):
                                             + test_group_id, verify=False)
 
     def test_update_group(self):
-        c = ClientForTest(test_certificate_name)
+        c = GroupsClientForTest(test_certificate_name)
 
         try:
             c.update_group(None)
@@ -319,6 +346,31 @@ class TestClient(unittest.TestCase):
               mock.call(test_base_url + "/search?", verify=False,
                         params=these_params) ] )
         mock_session_get.reset_mock()
+
+    def test_get_user(self):
+        c = UsersClientForTest(test_certificate_name)
+
+        try:
+            c.get_user(None)
+        except ValueError as e:
+            # Good!
+            self.assertEqual("User Identity cannot be None.", e.message, "Wrong error message: " + e.message)
+
+        try:
+            c.get_user('foo')
+        except ValueError as e:
+            self.assertEqual("identity must be of type Identity.", e.message, "Wrong error message: " + e.message)
+
+        mock_response.text = test_get_user_xml
+        mock_response.status_code = 200
+        mock_session.get.return_value = mock_response
+
+        identity = Identity('foo', 'HTTP')
+        u = c.get_user(identity)
+
+        self.assertIsNotNone(u, 'User for %s is none' % Identity)
+        self.assertTrue(identity in u.identities)
+        mock_session.get.assert_called_with(test_base_url + "/users/foo?idType=HTTP", verify=False)
 
 
 def run():
