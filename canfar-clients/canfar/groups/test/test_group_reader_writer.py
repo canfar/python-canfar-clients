@@ -167,7 +167,7 @@ class TestGroupReaderWriter(unittest.TestCase):
         self.assertEqual(actual.group_id, expected.group_id)
 
         self.assertEqual(actual.owner.internal_id, expected.owner.internal_id)
-        self.assertEqual(actual.owner.identities, expected.owner.identities)
+        self.assertSetEqual(actual.owner.identities, expected.owner.identities)
         self.assertEqual(actual.description, expected.description)
         self.assertEqual(actual.last_modified, expected.last_modified)
 

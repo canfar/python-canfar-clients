@@ -75,7 +75,9 @@ class User(object):
 
     def __init__(self, internal_id=None):
         """
-        user_id is an Identity containing the Identity name and type.
+        internal_id is a uri which uniquely identifies the user.
+        The uri scheme and scheme-specific-part uniquely identify the service,
+        while the uri fragment uniquely identifies the user of that service.
         """
         self.internal_id = internal_id
         self.identities = set()

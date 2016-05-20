@@ -80,11 +80,11 @@ from canfar.groups.identity import Identity
 
 class TestUserReaderWriter(unittest.TestCase):
     def test_read_write(self):
-        expected = User('ivo://cadc.nrc.ca/user?00000000-0000-0000-0000-000000000a8b')
+        expected = User('ivo://bar.com/user?00000000-0000-0000-0000-000000000f00')
         expected.identities.add(Identity('foo@bar.com', 'OpenID'))
         expected.identities.add(Identity('foo', 'HTTP'))
         expected.identities.add(Identity('00000000-0000-0000-0000-000000000004', 'CADC'))
-        expected.identities.add(Identity('CN=cadcauthtest1_24c,OU=cadc,O=hia,C=ca', 'X500'))
+        expected.identities.add(Identity('cn=foo,c=bar', 'X500'))
 
         writer = UserWriter()
         xml_string = writer.write(expected)
@@ -97,6 +97,7 @@ class TestUserReaderWriter(unittest.TestCase):
 
         self.assertIsNotNone(actual)
         self.assertEqual(actual.internal_id, expected.internal_id)
+        self.assertSetEqual(expected.identities, actual.identities)
 
 
 def run():
