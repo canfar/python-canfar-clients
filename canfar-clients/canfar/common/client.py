@@ -242,6 +242,10 @@ class BaseClient(object):
         """Wrapper for GET so that we use this client's session"""
         return self.session.get(*args, **kwargs)
 
+    def _delete(self, *args, **kwargs):
+        """Wrapper for DELETE so that we use this client's session"""
+        return self.session.delete(*args, **kwargs)
+
     def _head(self, *args, **kwargs):
         """Wrapper for HEAD so that we use this client's session"""
         return self.session.head(*args, **kwargs)

@@ -61,7 +61,7 @@ class GroupsClientIntTest(unittest.TestCase):
         self.assertEqual(actual.group_id, expected.group_id, 'group_ids do not match')
         self.assertEqual(actual.description, expected.description, 'descriptions do not match')
 
-        # get a user to add as a member
+        # get a user to add as an admin member
         self.assertTrue(len(actual.owner.identities) > 0)
         identity = actual.owner.identities.pop()
         users_client = UsersClient(self.cert_file)
@@ -71,8 +71,37 @@ class GroupsClientIntTest(unittest.TestCase):
             self.fail('Error getting user {0} because {1}'.format(identity, repr(e)))
 
         expected.description = 'new description'
-        expected.user_members.add(owner)
         expected.user_admins.add(owner)
+
+        # add user as user member
+        try:
+            client.add_user_member(identity, expected.group_id)
+        except Exception, e:
+            self.fail('Error adding user member because {0}'.format(repr(e)))
+
+        # get the group and confirm membership
+        try:
+            actual = client.get_group(expected.group_id)
+        except Exception, e:
+            self.fail('Error getting group because {0}'.format(repr(e)))
+
+        self.assertTrue(len(actual.user_members) == 1)
+        actual_user = actual.user_members.pop()
+        self.assertIn(identity, actual_user.identities)
+
+        # remove the user member
+        try:
+            client.remove_user_member(identity, expected.group_id)
+        except Exception, e:
+            self.fail('Error removing user member because {0}'.format(repr(e)))
+
+        # get the group and confirm membership
+        try:
+            actual = client.get_group(expected.group_id)
+        except Exception, e:
+            self.fail('Error getting group because {0}'.format(repr(e)))
+
+        self.assertTrue(len(actual.user_members) == 0)
 
         # create a second test group
         group_member = Group(self.get_group_id('py2'))
@@ -115,8 +144,8 @@ class GroupsClientIntTest(unittest.TestCase):
 
         self.assertEqual(len(actual.user_members), len(expected.user_members),
                          'number of user members does not match')
-        self.assertEqual(next(iter(actual.user_members)).internal_id, next(iter(expected.user_members)).internal_id,
-                         'user members do not match')
+        # self.assertEqual(next(iter(actual.user_members)).internal_id, next(iter(expected.user_members)).internal_id,
+        #                  'user members do not match')
 
         self.assertEqual(len(actual.user_admins), len(expected.user_admins),
                          'number of user admins does not match')
