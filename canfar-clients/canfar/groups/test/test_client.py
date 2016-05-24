@@ -250,6 +250,82 @@ class TestClient(unittest.TestCase):
                                              json=None,
                                              headers=test_headers)
 
+    def test_add_user_member(self):
+        c = GroupsClientForTest(test_certificate_name)
+
+        try:
+            c.add_user_member(None, None)
+        except ValueError as e:
+            # Good!
+            self.assertEqual("User identity cannot be None.", e.message,
+                             "Wrong error message.")
+
+        try:
+            c.add_user_member(Identity('foo', 'HTTP'), None)
+        except ValueError as e:
+            # Good!
+            self.assertEqual("Group ID cannot be None or empty.", e.message,
+                             "Wrong error message.")
+
+        try:
+            c.add_user_member(Identity('foo', 'HTTP'), '')
+        except ValueError as e:
+            # Good!
+            self.assertEqual("Group ID cannot be None or empty.", e.message,
+                             "Wrong error message.")
+
+        mock_put_response = mock.Mock(spec=requests.Response())
+        mock_put_response.status_code = 200
+        mock_session.put.return_value = mock_put_response
+
+        identity = Identity('foo', 'HTTP')
+        group_id = 'bar'
+        url = '{0}/groups/{1}/userMembers/{2}'.format(test_base_url, group_id, identity.name)
+        parameters = {'idType': identity.type}
+
+        c.add_user_member(identity, group_id)
+
+        self.assertTrue(mock_session.put.called, "PUT was never called.")
+        mock_session.put.assert_called_with(url, params=parameters)
+
+    def test_remove_user_member(self):
+        c = GroupsClientForTest(test_certificate_name)
+
+        try:
+            c.remove_user_member(None, None)
+        except ValueError as e:
+            # Good!
+            self.assertEqual("User identity cannot be None.", e.message,
+                             "Wrong error message.")
+
+        try:
+            c.remove_user_member(Identity('foo', 'HTTP'), None)
+        except ValueError as e:
+            # Good!
+            self.assertEqual("Group ID cannot be None or empty.", e.message,
+                             "Wrong error message.")
+
+        try:
+            c.remove_user_member(Identity('foo', 'HTTP'), '')
+        except ValueError as e:
+            # Good!
+            self.assertEqual("Group ID cannot be None or empty.", e.message,
+                             "Wrong error message.")
+
+        mock_delete_response = mock.Mock(spec=requests.Response())
+        mock_delete_response.status_code = 200
+        mock_session.delete.return_value = mock_delete_response
+
+        identity = Identity('foo', 'HTTP')
+        group_id = 'bar'
+        url = '{0}/groups/{1}/userMembers/{2}'.format(test_base_url, group_id, identity.name)
+        parameters = {'idType': identity.type}
+
+        c.remove_user_member(identity, group_id)
+
+        self.assertTrue(mock_session.delete.called, "DELETE was never called.")
+        mock_session.delete.assert_called_with(url, params=parameters)
+
     @mock.patch('os.path.isfile')           # fake loading cert
     @mock.patch('canfar.common.client.BaseClient.get_current_user_dn') # fake dn
     @mock.patch('requests.Session.get')     # fake get

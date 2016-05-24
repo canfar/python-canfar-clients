@@ -151,6 +151,42 @@ class GroupsClient(BaseClient):
         """ Logger for gmsclient """
         self.logger = logging.getLogger('gmsclient')
 
+    def add_user_member(self, identity, group_id):
+        """Add the user to the group's user members.
+
+        identity - the user to add as a user member
+        group_id - the group to add the user member
+        """
+
+        if identity is None:
+            raise ValueError("User identity cannot be None.")
+        if group_id is None or group_id.strip() == '':
+            raise ValueError("Group ID cannot be None or empty.")
+
+        url = '{0}/groups/{1}/userMembers/{2}'.format(self.base_url, group_id, identity.name)
+        parameters = {'idType': identity.type}
+
+        response = self._put(url, params=parameters)
+        self.check_exception(response)
+
+    def remove_user_member(self, identity, group_id):
+        """Remove the user from the group's user members.
+
+        identity - the user to remove as a user member
+        group_id - the group to remove the user member
+        """
+
+        if identity is None:
+            raise ValueError("User identity cannot be None.")
+        if group_id is None or group_id.strip() == '':
+            raise ValueError("Group ID cannot be None or empty.")
+
+        url = '{0}/groups/{1}/userMembers/{2}'.format(self.base_url, group_id, identity.name)
+        parameters = {'idType': identity.type}
+
+        response = self._delete(url, params=parameters)
+        self.check_exception(response)
+
     def get_membership(self, user_id=None, role=Role('member'),
                        group_id=None):
         """Search for user group membership, of a certain role.
@@ -164,9 +200,9 @@ class GroupsClient(BaseClient):
             user_id = self.current_user_dn
 
         url = self.base_url + "/search?"
-        params = {'ID' : user_id,
-                  'IDTYPE' : 'x500',
-                  'ROLE' : role.get_name()}
+        params = {'ID': user_id,
+                  'IDTYPE': 'x500',
+                  'ROLE': role.get_name()}
         if group_id:
             params['GROUPID'] = group_id
 
@@ -174,8 +210,7 @@ class GroupsClient(BaseClient):
         reader = GroupsReader()
         groups = reader.read(xml_string)
 
-        self.logger.info('Retrieved groups ' + \
-                             ', '.join([g.group_id for g in groups]))
+        self.logger.info('Retrieved groups ' + ', '.join([g.group_id for g in groups]))
 
         return groups
 
