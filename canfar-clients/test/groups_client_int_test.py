@@ -11,9 +11,7 @@ import uuid
 sys.path.insert(0, os.path.abspath('../'))
 from canfar.groups.client import GroupsClient, UsersClient
 from canfar.groups.group import Group
-from canfar.groups.group_xml.group_writer import GroupWriter
-from canfar.groups.user import User
-from canfar.groups.identity import Identity
+from canfar.groups.exceptions import MemberExistsException, MemberNotFoundException
 
 
 class GroupsClientIntTest(unittest.TestCase):
@@ -89,6 +87,13 @@ class GroupsClientIntTest(unittest.TestCase):
         actual_user = actual.user_members.pop()
         self.assertIn(identity, actual_user.identities)
 
+        # add the user a second time, should throw MemberExistsException
+
+        try:
+            client.add_user_member(identity, expected.group_id)
+        except Exception as e:
+            self.assertTrue(isinstance(e, MemberExistsException))
+
         # remove the user member
         try:
             client.remove_user_member(identity, expected.group_id)
@@ -102,6 +107,12 @@ class GroupsClientIntTest(unittest.TestCase):
             self.fail('Error getting group because {0}'.format(repr(e)))
 
         self.assertTrue(len(actual.user_members) == 0)
+
+        # delete the user again, should throw MemberNotFoundException
+        try:
+            client.remove_user_member(identity, expected.group_id)
+        except Exception as e:
+            self.assertTrue(isinstance(e, MemberNotFoundException))
 
         # create a second test group
         group_member = Group(self.get_group_id('py2'))
