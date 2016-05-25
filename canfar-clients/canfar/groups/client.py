@@ -106,10 +106,13 @@ class GroupsClient(BaseClient):
         # Specialized exceptions handled by this client
         self._HTTP_STATUS_CODE_EXCEPTIONS[404] = {
             "User": exceptions.UserNotFoundException(),
-            "Group": exceptions.GroupNotFoundException()
+            "Group": exceptions.GroupNotFoundException(),
+            "Member": exceptions.MemberNotFoundException()
             }
-        self._HTTP_STATUS_CODE_EXCEPTIONS[409] = \
-            exceptions.GroupExistsException()
+        self._HTTP_STATUS_CODE_EXCEPTIONS[409] = {
+            "Group": exceptions.GroupExistsException(),
+            "Member": exceptions.MemberExistsException()
+        }
 
     def create_group(self, group):
         """ Persist the given Group """

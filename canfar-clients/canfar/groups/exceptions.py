@@ -98,3 +98,19 @@ class UserNotFoundException(Exception):
 
     def __init__(self, msg=None):
         self.msg = msg
+
+
+class MemberNotFoundException(Exception):
+    """Raised when removing a user as a user member from a group,
+    but the user is not a user member of the group"""
+
+    def __init__(self, msg=None):
+        self.msg = msg
+
+
+class MemberExistsException(Exception):
+    """Raised when adding a user as a user member to group,
+    but the user is already a user member of the group"""
+
+    def __init__(self, msg=None):
+        self.msg = msg

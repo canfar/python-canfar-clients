@@ -81,6 +81,7 @@ from canfar.groups.client import GroupsClient, UsersClient
 from canfar.groups.identity import Identity
 from canfar.groups.group_xml.group_reader import GroupReader
 from canfar.groups.group import Group
+from canfar.groups.exceptions import MemberExistsException, MemberNotFoundException
 
 test_certificate_name = "cadcproxy.pem"
 test_x500_dn = 'C=ca,O=someorg,OU=someunit,CN=somebody'
@@ -275,13 +276,21 @@ class TestClient(unittest.TestCase):
                              "Wrong error message.")
 
         mock_put_response = mock.Mock(spec=requests.Response())
-        mock_put_response.status_code = 200
+        mock_put_response.status_code = 409
         mock_session.put.return_value = mock_put_response
 
         identity = Identity('foo', 'HTTP')
         group_id = 'bar'
         url = '{0}/groups/{1}/userMembers/{2}'.format(test_base_url, group_id, identity.name)
         parameters = {'idType': identity.type}
+
+        try:
+            c.add_user_member(identity, group_id)
+        except Exception as e:
+            self.assertTrue(isinstance(e, MemberExistsException))
+
+        mock_put_response.status_code = 200
+        mock_session.put.return_value = mock_put_response
 
         c.add_user_member(identity, group_id)
 
@@ -313,13 +322,21 @@ class TestClient(unittest.TestCase):
                              "Wrong error message.")
 
         mock_delete_response = mock.Mock(spec=requests.Response())
-        mock_delete_response.status_code = 200
+        mock_delete_response.status_code = 404
         mock_session.delete.return_value = mock_delete_response
 
         identity = Identity('foo', 'HTTP')
         group_id = 'bar'
         url = '{0}/groups/{1}/userMembers/{2}'.format(test_base_url, group_id, identity.name)
         parameters = {'idType': identity.type}
+
+        try:
+            c.remove_user_member(identity, group_id)
+        except Exception as e:
+            self.assertTrue(isinstance(e, MemberNotFoundException))
+
+        mock_delete_response.status_code = 200
+        mock_session.delete.return_value = mock_delete_response
 
         c.remove_user_member(identity, group_id)
 
