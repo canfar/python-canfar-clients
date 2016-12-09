@@ -74,7 +74,7 @@ from canfar.groups.group import Group
 from group_property_reader import GroupPropertyReader
 from user_reader import UserReader
 
-GROUP_URI = 'ivo://cadc.nrc.ca/gms#'
+GROUP_URI = 'ivo://cadc.nrc.ca/gms?'
 
 
 class GroupReader(object):
