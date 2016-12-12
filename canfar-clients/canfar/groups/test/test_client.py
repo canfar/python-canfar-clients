@@ -97,11 +97,11 @@ mock_response = mock.Mock(spec=requests.Response())
 # XML test return documents and corresponding group ID sets
 _XML0 = '<?xml version="1.0" encoding="UTF-8"?>\r\n<groups />\r\n'
 _XML1 = '<?xml version="1.0" encoding="UTF-8"?>\r\n<groups>\r\n' + \
-        '<group uri="ivo://cadc.nrc.ca/gms#groupA">\r\n</group>' + \
+        '<group uri="ivo://cadc.nrc.ca/gms?groupA">\r\n</group>' + \
         '\r\n</groups>'
 _XML2 = '<?xml version="1.0" encoding="UTF-8"?>\r\n<groups>\r\n' + \
-        '<group uri="ivo://cadc.nrc.ca/gms#groupA">\r\n</group>' + \
-        '<group uri="ivo://cadc.nrc.ca/gms#groupB">\r\n</group>' + \
+        '<group uri="ivo://cadc.nrc.ca/gms?groupA">\r\n</group>' + \
+        '<group uri="ivo://cadc.nrc.ca/gms?groupB">\r\n</group>' + \
         '\r\n</groups>'
 
 groups0 = []

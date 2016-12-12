@@ -71,7 +71,7 @@ from group_property_writer import GroupPropertyWriter
 from user_writer import UserWriter
 from canfar.common.util import date2ivoa
 
-GROUP_URI = 'ivo://cadc.nrc.ca/gms#'
+GROUP_URI = 'ivo://cadc.nrc.ca/gms?'
 
 
 class GroupWriter(object):
