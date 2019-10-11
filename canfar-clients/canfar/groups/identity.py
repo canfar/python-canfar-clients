@@ -70,13 +70,13 @@
 
 class Identity(object):
 
-    identity_types = ['X500', 'OpenID', 'HTTP', 'CADC']
+    identity_types = ['X500', 'OpenID', 'HTTP', 'CADC', 'POSIX']
 
     def __init__(self, name, identity_type):
         if name is None or not name:
             raise ValueError('Identity name is None or empty')
         if identity_type not in self.identity_types:
-            raise ValueError('Unknown Identity type ' + type)
+            raise ValueError('Unknown Identity type ' + identity_type)
         self.name = name
         self.type = identity_type
 
