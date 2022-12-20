@@ -40,7 +40,7 @@ The command-line client scripts provided by this repo generally authenticate aut
 
 1. a proxy certificate in the default location `$HOME/.ssl/cadcproxy.pem` **OR**
 2. username/password stored in `$HOME/.netrc` with an entry like:
-        `machine www.canfar.phys.uvic.ca login [username] [password]`
+        `machine ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca login [username] password [password]`
 
 If neither a proxy certificate nor an entry in `.netrc` can be found, an anonymous connection is used.
 
