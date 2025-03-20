@@ -1,3 +1,6 @@
+
+** THIS REPOSITORY IS NOW OBSOLETE -- SEE ONGOING EFFORT AT https://github.com/opencadc/vostools ** 
+
 # python-canfar-clients
 This repository contains Python client libraries and command-line utilities for interacting with [CANFAR](http://www.canfar.phys.uvic.ca/) and [CADC](http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/) web services, under `canfar-clients/` and `cadc-clients/`, respectively. `canfar-cloud-clients/` contains a package that extends `canfar-clients` to interact with CANFAR services that depend on external OpenStack cloud providers. See the individual `README.md` in each package directory for further details.
 
